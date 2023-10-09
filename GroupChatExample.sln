@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.002.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupChatExample.CodingTask", "src\GroupChatExample.CodingTask\GroupChatExample.CodingTask.csproj", "{0F9A5F4A-EA93-458C-9739-F785379D3C46}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupChatExample.DotnetInteractiveService", "src\GroupChatExample.DotnetInteractiveService\GroupChatExample.DotnetInteractiveService.csproj", "{CBA0D41B-1B2A-448B-A127-067FE7349862}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupChatExample.SourceGenerator.Tests", "src\GroupChatExample.SourceGenerator.Tests\GroupChatExample.SourceGenerator.Tests.csproj", "{B5D40F73-8B7B-4B2A-8D7A-1751210DBEE1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupChatExample.Helper", "src\GroupChatExample.Helper\GroupChatExample.Helper.csproj", "{E74AD7D1-88DC-4196-97D8-FAE618D5990E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupChatExample.DotnetInteractiveService.Tests", "src\GroupChatExample.DotnetInteractiveService.Tests\GroupChatExample.DotnetInteractiveService.Tests.csproj", "{90C55A6F-D2F8-4F45-B9B0-191CFBD10E3F}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GroupChatExample.SourceGenerator", "src\GroupChatExample.SourceGenerator\GroupChatExample.SourceGenerator.csproj", "{540AAD13-E0B7-4AB4-A8DB-0C9EF9739D2B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0F9A5F4A-EA93-458C-9739-F785379D3C46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F9A5F4A-EA93-458C-9739-F785379D3C46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F9A5F4A-EA93-458C-9739-F785379D3C46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F9A5F4A-EA93-458C-9739-F785379D3C46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CBA0D41B-1B2A-448B-A127-067FE7349862}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CBA0D41B-1B2A-448B-A127-067FE7349862}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CBA0D41B-1B2A-448B-A127-067FE7349862}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CBA0D41B-1B2A-448B-A127-067FE7349862}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5D40F73-8B7B-4B2A-8D7A-1751210DBEE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5D40F73-8B7B-4B2A-8D7A-1751210DBEE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5D40F73-8B7B-4B2A-8D7A-1751210DBEE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5D40F73-8B7B-4B2A-8D7A-1751210DBEE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E74AD7D1-88DC-4196-97D8-FAE618D5990E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E74AD7D1-88DC-4196-97D8-FAE618D5990E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E74AD7D1-88DC-4196-97D8-FAE618D5990E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E74AD7D1-88DC-4196-97D8-FAE618D5990E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90C55A6F-D2F8-4F45-B9B0-191CFBD10E3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90C55A6F-D2F8-4F45-B9B0-191CFBD10E3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90C55A6F-D2F8-4F45-B9B0-191CFBD10E3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90C55A6F-D2F8-4F45-B9B0-191CFBD10E3F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{540AAD13-E0B7-4AB4-A8DB-0C9EF9739D2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{540AAD13-E0B7-4AB4-A8DB-0C9EF9739D2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{540AAD13-E0B7-4AB4-A8DB-0C9EF9739D2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{540AAD13-E0B7-4AB4-A8DB-0C9EF9739D2B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0D84DF8B-B368-46F1-9250-6AD6EA4F5B75}
+	EndGlobalSection
+EndGlobal

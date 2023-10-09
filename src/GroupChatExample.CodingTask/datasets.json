@@ -1,0 +1,87 @@
+[
+  {
+    "Name": "Beginner Linear Regression",
+    "Description": "Create a dummy numeric dataset containing two features X and Y and implement simple linear regression. Calculate the coefficients of the regression line. Save the model to simpleRegression.mlnet for future use. Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "simpleRegression.mlnet"
+  },
+  {
+    "Name": "Multi-class Classification",
+    "Description": "Create a multiclass classification model using a dummy dataset with three classes column and four features columns. Evaluate and print the model accuracy. Save the trained model to multiClass.mlnet. Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "multiClass.mlnet"
+  },
+  {
+    "Name": "Binary Classification",
+    "Description": "Create a dummy dataset with two binary classes and implement a logistic regression model. Print the metrics such as Accuracy, Log-Loss, Area Under ROC curve. Save the model to binaryClassification.mlnet. Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "binaryClassification.mlnet"
+  },
+  {
+    "Name": "Anomaly Detection",
+    "Description": "Create a dummy time series dataset and implement an anomaly detection model. Highlight and print the anomalies. Save the trained model to anomalyDetection.mlnet.",
+    "OutputFileName": "anomalyDetection.mlnet"
+  },
+  {
+    "Name": "Feature Scalings",
+    "Description": "Create a dummy dataset with large range difference in values across features. Apply feature scaling methods such as MinMax scaling and Standard scaling and compare. Save the transform model to featureScaling.mlnet. Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "featureScaling.mlnet"
+  },
+  {
+    "Name": "Natural Language Processing",
+    "Description": "Implement a text classification model using a dummy text dataset. Evaluate model performance by metrics such as Accuracy, F1-score and save the model to textClassification.mlnet, Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "textClassification.mlnet"
+  },
+  {
+    "Name": "PCA for Dimension Reduction",
+    "Description": "Implement PCA on a dummy dataset with a large number of features for dimension reduction. Print the principal components and the variance explained by each component. Save the result to PCA.mlnet. Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "PCA.mlnet"
+  },
+  {
+    "Name": "Cluster with KMeans",
+    "Description": "Create a dummy dataset with 3 different labels: [a, b, c] and cluster them using KMeans. Then classify the dummy dataset using kmeans model and print out the rows of the first cluster. Finally save the kmeans model to kmeans.mlnet. Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "kmeans.mlnet"
+  },
+  {
+    "Name": "Preview first 10 rows of titanic",
+    "Description": "Using mlnet DataFrame to preview the first 10 row of dataset titanic.csv and save it to titanic-10.csv, the path to titanic.csv is \"D:\\dataset\\titanic.csv\". Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "titanic-10.csv"
+  },
+  {
+    "Name": "Training titanic using AutoML",
+    "Description": "Train a classification model on titanic.csv and save it to titanic.mlnet, the path to titanic.csv is \"D:\\dataset\\titanic.csv\". Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "titanic.mlnet"
+  },
+  {
+    "Name": "Regression using LightGBM",
+    "Description": "Use LightGBM to train a regression model on a dummy dataset and save the model to regression.mlnet. The path to that dummy dataset is \"D:\\dataset\\taxi-fare_train.csv\". Peek the first 10 rows of that dataset first and implement a regression model on fare_amount. Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "taxi-fare.mlnet"
+  },
+  {
+    "Name": "Multiclass Classification using LightGBM",
+    "Description": "Use LightGBM to train a multiclass classification model on iris dataset and save the model to iris.mlnet. The path to iris is \"D:\\dataset\\IRIS.MDF-iris-full.csv\". Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "iris.mlnet"
+  },
+  {
+    "Name": "Binary Classification with Logistic Regression",
+    "Description": "Use a binary classification dataset and train a logistic regression model. Classify the dataset using the trained model and print out the rows of the first class. Save the logistic regression model to logistic_regression.mlnet. Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "logistic_regression.mlnet"
+  },
+  {
+    "Name": "Multiclass Classification with SVM",
+    "Description": "Load a multiclass classification dataset and train a support vector machine (SVM) model. Classify the dataset using the trained model and print out the accuracy. Save the SVM model to svm.mlnet. Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "svm.mlnet"
+  },
+  {
+    "Name": "Regression with FastTree",
+    "Description": "create a dummy regression dataset and train a decision tree regression model using the FastTree algorithm. Predict the target variable for a test dataset using the trained model and print the predictions. Save the decision tree regression model to fasttree_regression.mlnet. Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "fasttree_regression.mlnet"
+  },
+  {
+    "Name": "Clustering with KMeans",
+    "Description": "Create a dummy dataset with 3 different labels: [a, b, c] and cluster them using KMeans. Then classify the dummy dataset using kmeans model and print out the rows of the first cluster. Finally save the kmeans model to kmeans.mlnet. Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "kmeans.mlnet"
+  },
+  {
+    "Name": "Anomaly Detection with PCA",
+    "Description": "Load an anomaly detection dataset and apply the PCA algorithm to reduce the dimensionality. Train an anomaly detection model using the reduced dataset. Classify the dataset using the trained model and print out the rows classified as anomalies. Save the anomaly detection model to anomaly_detection.mlnet. Once completed, print 'task resolved' in the end.",
+    "OutputFileName": "anomaly_detection.mlnet"
+  }
+]

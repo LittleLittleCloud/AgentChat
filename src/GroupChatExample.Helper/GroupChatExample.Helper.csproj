@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<Description>Helper Library for Copilot Builder</Description>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\GroupChatExample.DotnetInteractiveService\GroupChatExample.DotnetInteractiveService.csproj" />
+		<ProjectReference Include="..\GroupChatExample.SourceGenerator\GroupChatExample.SourceGenerator.csproj">
+			<IncludeAssets>all</IncludeAssets>
+		</ProjectReference>
+		<PackageReference Include="Azure.AI.OpenAI" Version="$(AzureOpenAIVersion)" />
+	</ItemGroup>
+
+</Project>

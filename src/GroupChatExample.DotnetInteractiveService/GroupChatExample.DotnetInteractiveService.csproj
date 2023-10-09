@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.DotNet.Interactive.VisualStudio" Version="$(MicrosoftDotnetInteractive)" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <EmbeddedResource Include="dotnet-tools.json" />
+	  <EmbeddedResource Include="RestoreInteractive.config" />
+	</ItemGroup>
+
+</Project>

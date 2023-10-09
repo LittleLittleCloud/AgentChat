@@ -1,0 +1,6 @@
+# Set the default behavior, in case people don't have core.autocrlf set.
+* text=auto
+
+# Force bash scripts to always use lf line endings so that if a repo is accessed
+# in Unix via a file share from Windows, the scripts will work.
+*.sh text eol=lf
