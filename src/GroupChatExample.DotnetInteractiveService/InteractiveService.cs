@@ -62,7 +62,7 @@ namespace GroupChatExample.DotnetInteractiveService
             {
                 var res = await this.kernel.SendAndThrowOnCommandFailedAsync(cmd, ct);
                 var events = res.Events;
-                var displayValues = events.Where(x => x is StandardErrorValueProduced || x is StandardOutputValueProduced)
+                var displayValues = events.Where(x => x is StandardErrorValueProduced || x is StandardOutputValueProduced || x is ReturnValueProduced)
                         .SelectMany(x => (x as DisplayEvent)!.FormattedValues);
 
                 if (displayValues is null || displayValues.Count() == 0)
