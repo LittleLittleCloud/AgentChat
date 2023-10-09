@@ -6,8 +6,6 @@ name: CI
 on:
   pull_request:
     branches: [ "main" ]
-env:
-  AZURE_ARTIFACTS_FEED_URL: https://devdiv.pkgs.visualstudio.com/_packaging/ModelBuilder/nuget/v3/index.json    
 
 jobs:
   build:
@@ -19,9 +17,6 @@ jobs:
       uses: actions/setup-dotnet@v3
       with:
         global-json-file: global.json
-        source-url: ${{ env.AZURE_ARTIFACTS_FEED_URL }}
-      env:
-        NUGET_AUTH_TOKEN: ${{ secrets.AZURE_ARTIFACTS_PAT }}
     - name: Restore dependencies
       run: dotnet restore
     - name: Build
