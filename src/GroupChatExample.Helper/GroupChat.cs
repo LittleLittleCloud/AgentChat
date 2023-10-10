@@ -8,8 +8,8 @@ namespace GroupChatExample.Helper
 {
     public partial class GroupChat
     {
-        private ChatAgent admin;
-        private List<ChatAgent> agents = new List<ChatAgent>();
+        private IAgent admin;
+        private List<IAgent> agents = new List<IAgent>();
         private OpenAIClient _client;
         private readonly string _model;
         private IEnumerable<(ChatMessage, string)> initializeMessages = new List<(ChatMessage, string)>();
@@ -33,8 +33,8 @@ namespace GroupChatExample.Helper
 
         public GroupChat(OpenAIClient client,
             string model,
-            ChatAgent admin,
-            IEnumerable<ChatAgent> agents,
+            IAgent admin,
+            IEnumerable<IAgent> agents,
             IEnumerable<(ChatMessage, string)>? initializeMessages = null)
         {
             this._client = client;
@@ -45,7 +45,7 @@ namespace GroupChatExample.Helper
             this.initializeMessages = initializeMessages ?? new List<(ChatMessage, string)>();
         }
 
-        public async Task<ChatAgent?> SelectNextSpeakerAsync(IEnumerable<(ChatMessage, string)> conversationWithName)
+        public async Task<IAgent?> SelectNextSpeakerAsync(IEnumerable<(ChatMessage, string)> conversationWithName)
         {
             var systemMessage = new ChatMessage(
                 ChatRole.System,
@@ -192,7 +192,7 @@ From admin:
             return message.Content.StartsWith(TERMINATE);
         }
 
-        private async Task<IEnumerable<ChatMessage>> ProcessConversations(ChatAgent nextSpeaker, IEnumerable<(ChatMessage, string)> conversationWithName)
+        private async Task<IEnumerable<ChatMessage>> ProcessConversations(IAgent nextSpeaker, IEnumerable<(ChatMessage, string)> conversationWithName)
         {
             var conversation = conversationWithName.Select(c =>
             {
