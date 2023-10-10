@@ -3,8 +3,8 @@
     <PropertyGroup>
         <VersionPrefix>0.3.2</VersionPrefix>
         <Authors>LittleLittleCloud</Authors>
-        <PackageProjectUrl>https://github.com/LittleLittleCloud/CopilotBuilder</PackageProjectUrl>
-        <RepositoryUrl>https://github.com/LittleLittleCloud/CopilotBuilder</RepositoryUrl>
+        <PackageProjectUrl>https://github.com/LittleLittleCloud/groupchat-example-for-dotnet</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/LittleLittleCloud/groupchat-example-for-dotnet</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
