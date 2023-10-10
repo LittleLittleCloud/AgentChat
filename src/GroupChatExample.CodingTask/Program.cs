@@ -1,5 +1,6 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using GroupChatExample.CodingTask;
+using GroupChatExample.Helper;
 using System.CommandLine;
 using System.CommandLine.NamingConventionBinder;
 using System.Text.Json;
