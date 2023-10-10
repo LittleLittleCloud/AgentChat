@@ -1,10 +1,9 @@
 ﻿using GroupChatExample.DotnetInteractiveService;
 using GroupChatExample.Helper;
+using System;
 using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
-namespace GroupChatExample.CoderRunner
+namespace GroupChatExample.Helper
 {
     public partial class DotnetInteractiveFunction : IDisposable
     {
@@ -19,45 +18,9 @@ namespace GroupChatExample.CoderRunner
         }
 
         /// <summary>
-        /// Process the previous message. Don't modify the previous message, pass it as is.
+        /// Run dotnet code. Don't modify the code, run it as is.
         /// </summary>
-        /// <param name="previousMessage">previous message.</param>
-        [FunctionAttribution]
-        public async Task<string> ProcessMessage(string previousMessage)
-        {
-            // retrieve all blocks from message between ``` and ```
-            var blocks = previousMessage.Split("```");
-            if (blocks.Length == 1)
-            {
-                // if message contains no block, return an error message.
-                return "Message contains no code block.";
-            }
-            else
-            {
-                // if message contains multiple blocks, return an error message.
-                if (blocks.Length > 3)
-                {
-                    return "Message contains multiple code blocks.";
-                }
-                else
-                {
-                    // if message contains ```csharp and ```, Run code.
-                    var csharpCodeRegex = Regex.Match(previousMessage, @"```csharp[\s\S]*```");
-                    var csharpCode = csharpCodeRegex.Value;
-                    if (csharpCode.Length > 0)
-                    {
-                        return await this.RunCode(csharpCode);
-                    }
-
-                    return "Message contains no csharp code block.";
-                }
-            }
-        }
-
-        /// <summary>
-        /// Run dotnet code block.
-        /// </summary>
-        /// <param name="code">code to run.</param>
+        /// <param name="code">code.</param>
         [FunctionAttribution]
         public async Task<string> RunCode(string code)
         {
@@ -79,7 +42,7 @@ namespace GroupChatExample.CoderRunner
                 // if result is over 100 characters, only return the first 100 characters.
                 if (result.Length > 100)
                 {
-                    result = result.Substring(0, 100) + "(...)";
+                    result = result.Substring(0, 100) + " (...too long to present)";
 
                     return result;
                 }

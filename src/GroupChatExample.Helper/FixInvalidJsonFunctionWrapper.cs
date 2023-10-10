@@ -6,9 +6,9 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace GroupChatExample.CoderRunner
+namespace GroupChatExample.Helper
 {
-    internal class FixInvalidJsonFunctionWrapper
+    public class FixInvalidJsonFunctionWrapper
     {
         private readonly OpenAIClient _client;
         private readonly string _model;

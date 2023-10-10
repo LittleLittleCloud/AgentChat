@@ -1,14 +1,18 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Azure.AI.OpenAI;
-using GroupChatExample.CoderRunner;
 using GroupChatExample.DotnetInteractiveService;
 using GroupChatExample.Helper;
 
 var workDir = Path.Combine(Path.GetTempPath(), "InteractiveService");
-if (!Directory.Exists(workDir))
+
+// remove workDir if exists
+if (Directory.Exists(workDir))
 {
-    Directory.CreateDirectory(workDir);
+    Directory.Delete(workDir, recursive: true);
 }
+
+// create workDir
+Directory.CreateDirectory(workDir);
 
 using var service = new InteractiveService(workDir);
 await service.StartAsync(workDir, default);
@@ -23,8 +27,9 @@ var coder = new ChatAgent(
         openAIClient,
         model,
         "Coder",
-        @"You are a helpful dotnet coder, you write dotnet script to resolve tasks.
-First, create a step-by-step plan for the task. Then implement each step one by one. Once you complete one step, reply [COMPLETE] to admin.
+        @"You are dotnet coder, you write dotnet script to resolve tasks.
+First, create a step-by-step plan for the task. 
+Then write code to resolve each step.
 Complete one step at a time, once you complete a step, you ask runner to run that step for you.
 e.g.
 - step1: download file
@@ -35,22 +40,22 @@ e.g.
 runner, run step 1 for me.
 
 Once you complete all steps, rely [COMPLETE].
-Here're some tips when you write dotnet code:
+Here're some rules to follow when you write dotnet code:
 - Write code in dotnet interactive. You can use `#r` to reference nuget package.
+- Don't write function, just write code, like what python does.
 - Don't use `using` statement. Runner can't handle it.
 - Try to use `var` instead of explicit type.
 - Try avoid using external library.
+- Always print out the result to console. Don't write code that doesn't print out anything.
 ");
 
 var runner = new ChatAgent(
         openAIClient,
         model,
         "Runner",
-        @"You are a dotnet runner,
-If the code contains Main() function, reject it.
-Otherwise, call RunCode to run the code from the most recent message if it contains code block. Don't modify the code block, pass it as is.
+        @"You call RunCode to run the code from the most recent message if it contains code block. Don't modify the code block, pass it as is.
 You call InstallNugetPackages if the most recent message contains nuget package installation.
-Otherwise you simply return 'no code block found'",
+Otherwise you return 'no code block found'",
         new Dictionary<FunctionDefinition, Func<string, Task<string>>>
         {
             { dotnetInteractiveFunction.RunCodeFunction, fixInvalidJsonFunction.FixInvalidJsonWrapper(dotnetInteractiveFunction.RunCodeWrapper) },
@@ -76,9 +81,9 @@ var groupChat = new GroupChat(
 admin.FunctionMaps.Add(groupChat.TerminateGroupChatFunction, groupChat.TerminateGroupChatWrapper);
 
 groupChat.AddMessage("Welcome to the group chat! Work together to resolve my task.", admin.Name);
-groupChat.AddMessage("I'll write dotnet script to resolve Admin's task. I'll fix any bugs from Runner", coder.Name);
-groupChat.AddMessage("I'll run dotnet code from Coder and return result.", runner.Name);
-groupChat.AddMessage($"The task is: retrieve the latest PR from mlnet repo and save the result to pr.txt.", admin.Name);
+groupChat.AddMessage("I'll write dotnet code to resolve Admin's task. I'll fix any bugs from Runner", coder.Name);
+groupChat.AddMessage("I'll review and run dotnet code from Coder and return result.", runner.Name);
+groupChat.AddMessage($"The task is: retrieve the latest PR from mlnet repo, print the result and save the result to pr.txt.", admin.Name);
 groupChat.AddMessage($"The link to mlnet repo is: https://github.com/dotnet/machinelearning. You don't need to pass a token as this api is public available. Make sure to include a User-Agent header, otherwise github will reject it.", admin.Name);
 
 var conversation = await groupChat.CallAsync(maxRound: 20);

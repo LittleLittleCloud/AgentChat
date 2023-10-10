@@ -97,7 +97,7 @@ namespace GroupChatExample.Helper
 
             var option = new ChatCompletionsOptions()
             {
-                Temperature = 0f,
+                Temperature = 0.7f,
                 MaxTokens = 1024,
                 Functions = _functionMaps?.Select(kv => kv.Key)?.ToList() ?? new List<FunctionDefinition>(),
             };
