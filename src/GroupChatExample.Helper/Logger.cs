@@ -1,4 +1,8 @@
-﻿namespace GroupChatExample.CodingTask
+﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+
+namespace GroupChatExample.Helper
 {
     public class Logger
     {
@@ -28,7 +32,7 @@
                 System.IO.Directory.CreateDirectory(directory);
             }
 
-            await System.IO.File.WriteAllTextAsync(path, content);
+            File.WriteAllText(path, content);
         }
     }
 }

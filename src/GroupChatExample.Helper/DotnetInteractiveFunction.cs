@@ -1,10 +1,10 @@
 ﻿using GroupChatExample.DotnetInteractiveService;
 using GroupChatExample.Helper;
-using Microsoft.DotNet.Interactive.Documents;
-using Microsoft.DotNet.Interactive.Documents.Jupyter;
+using System;
 using System.Text;
+using System.Threading.Tasks;
 
-namespace GroupChatExample.CodingTask
+namespace GroupChatExample.Helper
 {
     public partial class DotnetInteractiveFunction : IDisposable
     {
@@ -19,35 +19,15 @@ namespace GroupChatExample.CodingTask
         }
 
         /// <summary>
-        /// Run dotnet code block from given chat message.
-        /// chat message will look like this:
-        /// ## Example 1 ##
-        /// run the code below and verify it.
-        /// ```csharp
-        /// // code to run
-        /// ```
-        /// ## end ##
+        /// Run dotnet code. Don't modify the code, run it as is.
         /// </summary>
-        /// <param name="chatMessage">original chat message</param>
+        /// <param name="code">code.</param>
         [FunctionAttribution]
-        public async Task<string> RunCode(string chatMessage)
+        public async Task<string> RunCode(string code)
         {
             if (this._interactiveService == null)
             {
                 throw new Exception("InteractiveService is not initialized.");
-            }
-
-            // retrieve code from message between ```csharp and ```
-            string? code = null;
-
-            try
-            {
-                code = chatMessage.Substring(chatMessage.IndexOf("```csharp") + 9);
-                code = code.Substring(0, code.IndexOf("```"));
-            }
-            catch
-            {
-                code = chatMessage;
             }
 
             await (_logger?.LogToFile($"{nameof(RunCode)}.cs", code) ?? Task.CompletedTask);
@@ -63,7 +43,7 @@ namespace GroupChatExample.CodingTask
                 // if result is over 100 characters, only return the first 100 characters.
                 if (result.Length > 100)
                 {
-                    result = result.Substring(0, 100) + "(...)";
+                    result = result.Substring(0, 100) + " (...too long to present)";
 
                     return result;
                 }
