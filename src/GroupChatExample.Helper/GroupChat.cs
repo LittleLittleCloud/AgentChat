@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace GroupChatExample.Helper
 {
-    public class GroupChat
+    public partial class GroupChat
     {
         private ChatAgent admin;
         private List<ChatAgent> agents = new List<ChatAgent>();
@@ -19,19 +19,30 @@ namespace GroupChatExample.Helper
             "Please speak.",
             "proceed the conversation please",
         };
+        private const string TERMINATE = "[GROUPCHAT_TERMINATE]";
+
+        /// <summary>
+        /// terminate the group chat.
+        /// </summary>
+        /// <param name="message">terminate message.</param>
+        [FunctionAttribution]
+        public async Task<string> TerminateGroupChat(string message)
+        {
+            return $"{TERMINATE}: {message}";
+        }
 
         public GroupChat(OpenAIClient client,
             string model,
             ChatAgent admin,
             IEnumerable<ChatAgent> agents,
-            IEnumerable<(ChatMessage, string)> initializeMessages)
+            IEnumerable<(ChatMessage, string)>? initializeMessages = null)
         {
             this._client = client;
             this._model = model;
             this.admin = admin;
             this.agents = agents.ToList();
             this.agents.Add(admin);
-            this.initializeMessages = initializeMessages;
+            this.initializeMessages = initializeMessages ?? new List<(ChatMessage, string)>();
         }
 
         public async Task<ChatAgent?> SelectNextSpeakerAsync(IEnumerable<(ChatMessage, string)> conversationWithName)
@@ -89,7 +100,17 @@ From admin:
             return null;
         }
 
-        public async Task<IEnumerable<(ChatMessage, string)>?> CallAsync(IEnumerable<(ChatMessage, string)> conversationWithName, int maxRound = 10, bool throwExceptionWhenMaxRoundReached = true)
+        public void AddMessage(string message, string name)
+        {
+            var chatMessage = new ChatMessage
+            {
+                Content = message,
+                Role = ChatRole.User,
+            };
+            this.initializeMessages = this.initializeMessages.Append((chatMessage, name));
+        }
+
+        public async Task<IEnumerable<(ChatMessage, string)>?> CallAsync(IEnumerable<(ChatMessage, string)>? conversationWithName = null, int maxRound = 10, bool throwExceptionWhenMaxRoundReached = true)
         {
             if (maxRound == 0)
             {
@@ -106,6 +127,10 @@ From admin:
             // sleep 10 seconds
             await Task.Delay(10000);
 
+            if (conversationWithName == null)
+            {
+                conversationWithName = Enumerable.Empty<(ChatMessage, string)>();
+            }
 
             var agent = await this.SelectNextSpeakerAsync(conversationWithName) ?? this.admin;
             ChatMessage? result = null;
@@ -153,15 +178,18 @@ From admin:
             this.PrettyPrintMessage(result, agent.Name);
             var updatedConversation = conversationWithName.Append((result, agent.Name));
 
-            // if result is from admin and content is [TERMINATE], then terminate the conversation
-            if (agent.Name == this.admin.Name && result.Content == "[TERMINATE]")
+            // if message is terminate message, then terminate the conversation
+            if (this.IsTerminateMessage(result))
             {
                 return updatedConversation;
             }
 
-
-
             return await this.CallAsync(updatedConversation, maxRound - 1, throwExceptionWhenMaxRoundReached);
+        }
+
+        private bool IsTerminateMessage(ChatMessage message)
+        {
+            return message.Content.StartsWith(TERMINATE);
         }
 
         private async Task<IEnumerable<ChatMessage>> ProcessConversations(ChatAgent nextSpeaker, IEnumerable<(ChatMessage, string)> conversationWithName)

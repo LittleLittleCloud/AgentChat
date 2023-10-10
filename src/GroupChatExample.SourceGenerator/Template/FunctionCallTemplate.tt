@@ -11,6 +11,8 @@
 //----------------------
 using Azure.AI.OpenAI;
 using System.Text.Json;
+using System.Threading.Tasks;
+using System;
 
 namespace <#=NameSpace#>
 {

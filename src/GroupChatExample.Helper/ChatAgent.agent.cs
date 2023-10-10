@@ -30,13 +30,15 @@ namespace GroupChatExample.Helper
             this._client = client;
             _name = name;
             _roleInformation = roleInformation;
-            _functionMaps = functionMaps;
+            _functionMaps = functionMaps ?? new Dictionary<FunctionDefinition, Func<string, Task<string>>>();
         }
 
 
         public string Name { get => _name; }
 
         public string RoleInformation { get => _roleInformation; }
+
+        public Dictionary<FunctionDefinition, Func<string, Task<string>>> FunctionMaps { get => _functionMaps; }
 
         public IEnumerable<ChatMessage> CreateSystemMessages()
         {
@@ -95,7 +97,7 @@ namespace GroupChatExample.Helper
 
             var option = new ChatCompletionsOptions()
             {
-                Temperature = 0.4f,
+                Temperature = 0f,
                 MaxTokens = 1024,
                 Functions = _functionMaps?.Select(kv => kv.Key)?.ToList() ?? new List<FunctionDefinition>(),
             };
