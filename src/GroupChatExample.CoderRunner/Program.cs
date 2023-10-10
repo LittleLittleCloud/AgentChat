@@ -53,9 +53,21 @@ var runner = new ChatAgent(
         openAIClient,
         model,
         "Runner",
-        @"You call RunCode to run the code from the most recent message if it contains code block. Don't modify the code block, pass it as is.
-You call InstallNugetPackages if the most recent message contains nuget package installation.
-Otherwise you return 'no code block found'",
+        @"You are a helpful code runner. When a new message come, do the following check step by step
+- If the new message contains no code block or nuget packages to install, say 'No code available'.
+- If the new message contains csharp block, call run code function to run the code. Pass the code as is.
+- If the new message contains nuget packages to install, call install nuget package function to install packages.
+
+Here're some examples
+- Example 1 -
+No code available
+
+- Example 2 -
+RunCode( //arguments)
+
+- Example 3 -
+InstallNugetPackages( //arguments)
+",
         new Dictionary<FunctionDefinition, Func<string, Task<string>>>
         {
             { dotnetInteractiveFunction.RunCodeFunction, fixInvalidJsonFunction.FixInvalidJsonWrapper(dotnetInteractiveFunction.RunCodeWrapper) },
