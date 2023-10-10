@@ -53,10 +53,10 @@ var runner = new ChatAgent(
         openAIClient,
         model,
         "Runner",
-        @"You are a helpful code runner. When a latest message come, do the following check step by step
-- If the latest message contains no code block or nuget packages to install, say 'No code available'.
-- If the latest message contains csharp block, call run code function to run the code. Pass the code as is.
-- If the latest message contains nuget packages to install, call install nuget package function to install packages.
+        @"You are a helpful code runner. When a new message come, do the following check step by step
+- If the new message contains no code block or nuget packages to install, say 'No code available'.
+- If the new message contains csharp block, call run code function to run the code. Pass the code as is.
+- If the new message contains nuget packages to install, call install nuget package function to install packages.
 
 Here're some examples
 - Example 1 -
