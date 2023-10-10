@@ -11,5 +11,6 @@ This repo contains the code examples for group chat.
 | Name | Description |
 | ------- | ----------- |
 | [dotnet interpreter](./src/GroupChatExample.DotnetInterpreter/) | Using LLM to resolve task by writing and running csharp code. |
+| [coder + runner](./src/GroupChatExample.CoderRunner/) | Group chat using coder-runner pattern. |
 ## Group chat
 check out our [Autogen](https://github.com/microsoft/autogen) library for more information over group chat.

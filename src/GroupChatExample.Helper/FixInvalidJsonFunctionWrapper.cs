@@ -12,11 +12,13 @@ namespace GroupChatExample.Helper
     {
         private readonly OpenAIClient _client;
         private readonly string _model;
+        private readonly Logger? logger;
 
-        public FixInvalidJsonFunctionWrapper(OpenAIClient client, string model)
+        public FixInvalidJsonFunctionWrapper(OpenAIClient client, string model, Logger? logger = null)
         {
             this._client = client;
             this._model = model;
+            this.logger = logger;
         }
 
         public Func<string, Task<string>> FixInvalidJsonWrapper(Func<string, Task<string>> func)
@@ -65,7 +67,7 @@ Response example:
                     var completion = res.Value.Choices.First().Message;
 
                     // print fixed json
-                    Console.WriteLine(completion.Content);
+                    logger?.Log(completion.Content);
                     message = completion.Content;
                 }
 
