@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace GroupChatExample.Helper
 {
-    public partial class ChatAgent : IDisposable
+    public partial class ChatAgent : IDisposable, IAgent
     {
         private readonly string _model;
         private readonly string _name;
