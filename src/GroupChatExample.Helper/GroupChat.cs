@@ -196,9 +196,18 @@ From admin:
         {
             var conversation = conversationWithName.Select(c =>
             {
-                if(c.Item2 == nextSpeaker.Name)
+                if (c.Item2 == nextSpeaker.Name)
                 {
-                    return c.Item1;
+                    if (c.Item1.Role == ChatRole.Function)
+                    {
+                        return c.Item1;
+                    }
+                    else
+                    {
+                        var assistantMessage = new ChatMessage(ChatRole.Assistant, c.Item1.Content);
+
+                        return assistantMessage;
+                    }
                 }
                 else
                 {
@@ -217,12 +226,21 @@ From admin:
 
         public void PrettyPrintMessage(ChatMessage message, string name)
         {
+            var result = this.FormatMessage(message, name);
+            Console.WriteLine(result);
+            
+        }
+
+        public string FormatMessage(ChatMessage message, string name)
+        {
             // write result
-            Console.WriteLine($"Message from {name}");
+            var result = $"Message from {name}\n";
             // write a seperator
-            Console.WriteLine(new string('-', 20));
-            Console.WriteLine(message.Content);
-            Console.WriteLine(new string('-', 20));
+            result += new string('-', 20) + "\n";
+            result += message.Content + "\n";
+            result += new string('-', 20) + "\n";
+
+            return result;
         }
     }
 }

@@ -2,6 +2,8 @@
 using Azure.AI.OpenAI;
 using GroupChatExample.DotnetInteractiveService;
 using GroupChatExample.Helper;
+using System.Reflection;
+using System.Text;
 
 var workDir = Path.Combine(Path.GetTempPath(), "InteractiveService");
 
@@ -94,8 +96,23 @@ admin.FunctionMaps.Add(groupChat.TerminateGroupChatFunction, groupChat.Terminate
 
 groupChat.AddMessage("Welcome to the group chat! Work together to resolve my task.", admin.Name);
 groupChat.AddMessage("I'll write dotnet code to resolve Admin's task. I'll fix any bugs from Runner", coder.Name);
-groupChat.AddMessage("I'll review and run dotnet code from Coder and return result.", runner.Name);
+groupChat.AddMessage("I'll run code from Coder and return result.", runner.Name);
 groupChat.AddMessage($"The task is: retrieve the latest PR from mlnet repo, print the result and save the result to pr.txt.", admin.Name);
-groupChat.AddMessage($"The link to mlnet repo is: https://github.com/dotnet/machinelearning. You don't need to pass a token as this api is public available. Make sure to include a User-Agent header, otherwise github will reject it.", admin.Name);
+groupChat.AddMessage($"The link to mlnet repo is: https://github.com/dotnet/machinelearning. you don't need a token to use github pr api. Make sure to include a User-Agent header, otherwise github will reject it.", admin.Name);
 
 var conversation = await groupChat.CallAsync(maxRound: 20);
+
+// log conversation to chat_history.txt
+if(conversation is not null)
+{
+    var sb = new StringBuilder();
+    foreach(var (message, name) in conversation)
+    {
+        var fmtMsg = groupChat.FormatMessage(message, name);
+        sb.AppendLine(fmtMsg);
+    }
+
+    var chatHistoryPath = Path.Combine(workDir, "chat_history.txt");
+    await logger.LogToFile("chat_history.txt", sb.ToString());
+    logger.Log($"Chat history is logged to {chatHistoryPath}");
+}

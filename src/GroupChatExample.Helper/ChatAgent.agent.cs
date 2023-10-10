@@ -15,9 +15,7 @@ namespace GroupChatExample.Helper
         private readonly string _name;
         private readonly string _roleInformation;
         private OpenAIClient _client;
-        private HttpClient _httpClient = new HttpClient();
-        private InteractiveService? _interactiveService = null;
-        private readonly Dictionary<FunctionDefinition, Func<string, Task<string>>>? _functionMaps;
+        private readonly Dictionary<FunctionDefinition, Func<string, Task<string>>> _functionMaps;
 
         public ChatAgent(
             OpenAIClient client,
@@ -125,8 +123,6 @@ namespace GroupChatExample.Helper
 
         public void Dispose()
         {
-            _interactiveService?.Dispose();
-            _httpClient?.Dispose();
         }
     }
 }
