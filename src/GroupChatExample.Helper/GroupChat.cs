@@ -125,7 +125,7 @@ From admin:
             }
 
             // sleep 10 seconds
-            await Task.Delay(10000);
+            await Task.Delay(1000);
 
             if (conversationWithName == null)
             {

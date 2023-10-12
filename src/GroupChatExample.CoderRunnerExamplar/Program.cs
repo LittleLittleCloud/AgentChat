@@ -1,8 +1,8 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Azure.AI.OpenAI;
+using GroupChatExample.CoderRunnerExamplar;
 using GroupChatExample.DotnetInteractiveService;
 using GroupChatExample.Helper;
-using System.Reflection;
 using System.Text;
 
 var workDir = Path.Combine(Path.GetTempPath(), "InteractiveService");
@@ -17,14 +17,17 @@ if (Directory.Exists(workDir))
 Directory.CreateDirectory(workDir);
 
 using var service = new InteractiveService(workDir);
+using var httpClient = new HttpClient();
 await service.StartAsync(workDir, default);
 var logger = new Logger(workDir);
-using var dotnetInteractiveFunction = new DotnetInteractiveFunction(service, logger: logger);
+var notebookPath = Path.Combine(workDir, "notebook.ipynb");
+using var dotnetInteractiveFunction = new DotnetInteractiveFunction(service, notebookPath, logger: logger);
 var OPENAI_API_KEY = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new InvalidOperationException("OPENAI_API_KEY is not set");
-var model = "gpt-3.5-turbo-0613";
+var model = Constant.AZURE_GPT_4_MODEL_ID;
 var openAIClient = new OpenAIClient(OPENAI_API_KEY);
+openAIClient = Constant.AzureGPT4;
 var fixInvalidJsonFunction = new FixInvalidJsonFunctionWrapper(openAIClient, model);
-
+var exampleFunction = new MLNetExamplarFunction(httpClient, openAIClient, model);
 var coder = new ChatAgent(
         openAIClient,
         model,
@@ -38,8 +41,6 @@ e.g.
 ```
 
 ```csharp
-var a = 1;
-var b = 2;
 ...
 ```
 end
@@ -52,6 +53,7 @@ Here're some rules to follow when you write dotnet code:
 - Don't use external data source, like file, database, etc. Create a dummy dataset if you need.
 - Always print out the result to console. Don't write code that doesn't print out anything.
 ");
+
 
 var runner = new ChatAgent(
         openAIClient,
@@ -66,20 +68,40 @@ You can only reply with RunCodeFunction or InstallNugetPackagesFunction or 'No c
             { dotnetInteractiveFunction.InstallNugetPackagesFunction, dotnetInteractiveFunction.InstallNugetPackagesWrapper },
         });
 
+var examplar = new ChatAgent(
+    openAIClient,
+    model,
+    "Examplar",
+    @"You are mlnet Examplar. You provide mlnet api examples.
+- if runner ask for mlnet api example, call search mlnet api example function to search mlnet api example.
+- if question is not related to mlnet, say 'I don't know'.
+
+Here're some examples
+- Example 1 -
+SearchMLNetApiExample( //arguments)
+
+- Example 3 -
+I don't know, question is not related to mlnet.
+",
+    new Dictionary<FunctionDefinition, Func<string, Task<string>>>
+    {
+        { exampleFunction.SearchMLNetApiExampleFunction, exampleFunction.SearchMLNetApiExampleWrapper },
+    });
+
 var admin = new ChatAgent(
     openAIClient,
     model,
     "Admin",
     @"You are admin, you provide task to coder and runner.
-For each step, you ask Coder to implement the step, then ask Runner to run the code.
+For each step, you ask Examplar to provide examples. then ask Coder to implement the step, then ask Runner to run the code.
 If the code is not valid, ask Coder to fix the code.
 e.g.
+Examplar, provide mlnet example for xxx
 Coder, implement download file step
 Runner, run code.
 Coder, fix the code.
 
-If current step is resolved, you ask Coder to implement next step.
-If all steps resolved, you terminate group chat. Avoid free chatting.");
+You terminate group chat when task resolved successfully. Otherwise you ask coder to resolve your task.");
 
 var groupChat = new GroupChat(
     openAIClient,
@@ -89,29 +111,29 @@ var groupChat = new GroupChat(
     {
         coder,
         runner,
+        examplar,
     });
 
 admin.FunctionMaps.Add(groupChat.TerminateGroupChatFunction, groupChat.TerminateGroupChatWrapper);
 
-groupChat.AddMessage("Welcome to the group chat! Work together to resolve my task.", admin.Name);
-groupChat.AddMessage("I'll write dotnet code to resolve Admin's task. I'll fix any bugs from Runner", coder.Name);
-groupChat.AddMessage("I'll run code from Coder and return result.", runner.Name);
-groupChat.AddMessage($"The task is: retrieve the latest PR from mlnet repo, print the result and save the result to pr.txt.", admin.Name);
-groupChat.AddMessage($"The link to mlnet repo is: https://github.com/dotnet/machinelearning. you don't need a token to use github pr api. Make sure to include a User-Agent header, otherwise github will reject it.", admin.Name);
-groupChat.AddMessage(@$"Here's the step-by-step plan
-1. Send a GET request to the GitHub API to retrieve the list of pull requests for the mlnet repo.
-2. Parse the response JSON to extract the latest pull request.
-3. Print the result to the console and save the result to a file named ""pr.txt"".
-", admin.Name);
-groupChat.AddMessage($@"Coder, write code to resolve step 1.", admin.Name);
-
-var conversation = await groupChat.CallAsync(maxRound: 30);
+groupChat.AddMessage("Welcome to the group chat! Work together to resolve my task. I'll terminate the group chat when task get resolved", admin.Name);
+//groupChat.AddMessage("I'll write csharp code to resolve given step. I'll first write code, then ask Runner to run the code.", coder.Name);
+//groupChat.AddMessage("I'll run code after Coder provide code", runner.Name);
+//groupChat.AddMessage("I'll provide mlnet example for each step and fix mlnet-related error", examplar.Name);
+groupChat.AddMessage(@$"The task is: Train a lightGBM binary classification model using mlnet.
+- first, install necessary nuget packages and include namespaces.
+- then create a dummy dataset with at least 100 rows and four features.
+- then create a binary classification pipeline using lightGBM.
+- Then train the pipeline using dummy data and print accuracy
+- finally, save the model to lgbm.mlnet", admin.Name);
+groupChat.AddMessage("Examplar, provide some examples on installing nuget packages and include namespaces", admin.Name);
+var conversation = await groupChat.CallAsync(maxRound: 60);
 
 // log conversation to chat_history.txt
-if(conversation is not null)
+if (conversation is not null)
 {
     var sb = new StringBuilder();
-    foreach(var (message, name) in conversation)
+    foreach (var (message, name) in conversation)
     {
         var fmtMsg = groupChat.FormatMessage(message, name);
         sb.AppendLine(fmtMsg);

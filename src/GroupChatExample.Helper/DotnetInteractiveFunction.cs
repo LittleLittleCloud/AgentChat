@@ -1,6 +1,9 @@
 ﻿using GroupChatExample.DotnetInteractiveService;
 using GroupChatExample.Helper;
+using Microsoft.DotNet.Interactive.Documents.Jupyter;
+using Microsoft.DotNet.Interactive.Documents;
 using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,16 +13,38 @@ namespace GroupChatExample.Helper
     {
         private readonly InteractiveService? _interactiveService = null;
         private readonly Logger? _logger;
+        private string? _notebookPath;
 
 
-        public DotnetInteractiveFunction(InteractiveService interactiveService, Logger? logger = null)
+        public DotnetInteractiveFunction(InteractiveService interactiveService, string? notebookPath = null, Logger? logger = null)
         {
             this._interactiveService = interactiveService;
             this._logger = logger;
+            this._notebookPath = notebookPath;
+
+            if (this._notebookPath != null)
+            {
+                // remove existing notebook
+                if (File.Exists(this._notebookPath))
+                {
+                    logger?.Log("Removing existing notebook.");
+                    File.Delete(this._notebookPath);
+                }
+
+                // create an empty notebook
+                logger?.Log("Creating an empty notebook.");
+                var document = new InteractiveDocument();
+
+                using var stream = File.OpenWrite(_notebookPath);
+                Notebook.Write(document, stream);
+                stream.Flush();
+                stream.Dispose();
+                logger?.Log($"A new Notebook: {_notebookPath} is created.");
+            }
         }
 
         /// <summary>
-        /// Run dotnet code. Don't modify the code, run it as is.
+        /// Run existing dotnet code from message. Don't modify the code, run it as is.
         /// </summary>
         /// <param name="code">code.</param>
         [FunctionAttribution]
@@ -40,6 +65,13 @@ namespace GroupChatExample.Helper
                 {
                     return result;
                 }
+
+                // add cell if _notebookPath is not null
+                if (this._notebookPath != null)
+                {
+                    await AddCellAsync(code, "csharp");
+                }
+
                 // if result is over 100 characters, only return the first 100 characters.
                 if (result.Length > 100)
                 {
@@ -49,6 +81,12 @@ namespace GroupChatExample.Helper
                 }
 
                 return result;
+            }
+
+            // add cell if _notebookPath is not null
+            if (this._notebookPath != null)
+            {
+                await AddCellAsync(code, "csharp");
             }
 
             return "Code run successfully. no output is available.";
@@ -66,10 +104,18 @@ namespace GroupChatExample.Helper
                 throw new Exception("InteractiveService is not initialized.");
             }
 
+            var codeSB = new StringBuilder();
             foreach (var nuget in nugetPackages ?? Array.Empty<string>())
             {
                 var nugetInstallCommand = $"#r \"nuget:{nuget}\"";
+                codeSB.AppendLine(nugetInstallCommand);
                 await this._interactiveService.SubmitCSharpCodeAsync(nugetInstallCommand, default);
+            }
+
+            var code = codeSB.ToString();
+            if (this._notebookPath != null)
+            {
+                await AddCellAsync(code, "csharp");
             }
 
             var sb = new StringBuilder();
@@ -82,6 +128,30 @@ namespace GroupChatExample.Helper
             return sb.ToString();
         }
 
+        private async Task AddCellAsync(string cellContent, string kernelName)
+        {
+            if (!File.Exists(this._notebookPath))
+            {
+                using var stream = File.OpenWrite(this._notebookPath);
+                Notebook.Write(new InteractiveDocument(), stream);
+                stream.Dispose();
+            }
+
+            using var readStream = File.OpenRead(this._notebookPath);
+            var document = await Notebook.ReadAsync(readStream);
+            readStream.Dispose();
+
+            var cell = new InteractiveDocumentElement(cellContent, kernelName);
+
+            document.Add(cell);
+
+            using var writeStream = File.OpenWrite(this._notebookPath);
+            Notebook.Write(document, writeStream);
+            // sleep 3 seconds
+            await Task.Delay(3000);
+            writeStream.Flush();
+            writeStream.Dispose();
+        }
 
         public void Dispose()
         {

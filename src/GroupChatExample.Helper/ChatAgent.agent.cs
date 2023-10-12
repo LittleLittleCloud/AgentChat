@@ -55,6 +55,7 @@ namespace GroupChatExample.Helper
             // if chatMessage is function call, call that function
             if (chatMessage.FunctionCall is FunctionCall function)
             {
+                ChatMessage? functionResultMessage = null;
                 if (_functionMaps?.FirstOrDefault(kv => kv.Key.Name == function.Name).Value is Func<string, Task<string>> func)
                 {
                     var parameters = function.Arguments;
@@ -63,29 +64,30 @@ namespace GroupChatExample.Helper
                     try
                     {
                         var functionResult = await func(parameters);
-                        var functionResultMessage = new ChatMessage(ChatRole.Function, functionResult);
+                        functionResultMessage = new ChatMessage(ChatRole.Function, functionResult);
                         functionResultMessage.Name = function.Name;
 
-                        return functionResultMessage;
                     }
                     catch (Exception e)
                     {
-                        var msg = new ChatMessage(ChatRole.Function, $"Error: {e.Message}");
-                        msg.Name = function.Name;
-
-                        return msg;
+                        functionResultMessage = new ChatMessage(ChatRole.Function, $"Error: {e.Message}");
+                        functionResultMessage.Name = function.Name;
                     }
                 }
                 else
                 {
                     var availableFunctions = _functionMaps?.Select(kv => kv.Key.Name)?.ToList() ?? new List<string>();
-                    var unknownFunctionMessage = new ChatMessage(ChatRole.User, $"Unknown function: {function.Name}. Available functions: {string.Join(",", availableFunctions)}");
-
-                    return unknownFunctionMessage;
+                    functionResultMessage = new ChatMessage(ChatRole.User, $"Unknown function: {function.Name}. Available functions: {string.Join(",", availableFunctions)}");
                 }
-            }
 
-            return chatMessage;
+                //return await CallAsync(conversation.Concat(new ChatMessage[] { chatMessage, functionResultMessage }), ct);
+
+                return functionResultMessage;
+            }
+            else
+            {
+                return chatMessage;
+            }
         }
 
         public async Task<ChatMessage> StepCallAsync(IEnumerable<ChatMessage> conversation, CancellationToken ct = default)

@@ -1,37 +1,81 @@
 ﻿using Azure.AI.OpenAI;
 using GroupChatExample.Helper;
-using FluentAssertions.Equivalency;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System.Web;
 
-namespace GroupChatExample.CodingTask
+namespace GroupChatExample.CoderRunnerExamplar
 {
-    public partial class MLNetExample101Function
+    public partial class MLNetExamplarFunction
     {
         private HttpClient _httpClient;
+        private OpenAIClient _openAIClient;
+        private string _model;
 
-        public MLNetExample101Function(HttpClient httpClient)
+        public MLNetExamplarFunction(HttpClient httpClient, OpenAIClient openAIClient, string model)
         {
             _httpClient = httpClient;
+            _openAIClient = openAIClient;
+            _model = model;
+        }
+
+
+        /// <summary>
+        /// Write code to implement given step based on previous context.
+        /// </summary>
+        /// <param name="step">step.</param>
+        /// <param name="previousContext">previous context, like examples/variables/class definition/comments...</param>
+        [FunctionAttribution]
+        public async Task<string> ImplementStep(string step, string previousContext)
+        {
+            var examples = await QueryAsync(step, k: 3);
+            var prompts = $@"
+You are dotnet coder, you write dotnet script to resolve given step.
+You don't need to start from scratch, you can use class/variable defined in previous context.
+
+-ML.Net Examples-
+{examples}
+-End of ML.Net Examples-
+
+-Previous Context-
+{previousContext}
+-End of Previous Context-
+
+-Step-
+{step}
+-End of Step-
+
+Return your code between ```csharp and ``` with comments.
+";
+            var message = new ChatMessage
+            {
+                Content = prompts,
+                Role = ChatRole.System,
+            };
+            var agent = new ChatAgent(
+                _openAIClient,
+                _model,
+                "admin",
+                prompts);
+            var response = await agent.CallAsync(new[] { message });
+
+            if (response is null)
+            {
+                throw new Exception("response is null");
+            }
+
+            return response.Content;
         }
 
         /// <summary>
-        /// fix error code.
+        /// fix mlnet error.
         /// </summary>
         /// <param name="code">code with error</param>
         /// <param name="errorMessage">error message.</param>
-        /// <param name="k">number of example to return. default is 5.</param>
-        /// <param name="threshold">score thresold. default is 0.8</param>
         [FunctionAttribution]
-        public async Task<string> FixError(string code, string errorMessage, int k = 5, float threshold = 0.8f)
+        public async Task<string> FixMLNetError(string code, string errorMessage)
         {
-            var result = await QueryAsync(code, k, threshold);
+            var result = await QueryAsync(code, 3, 0.8f);
             // if no result is found, return it
             if (result.StartsWith("No example found"))
             {
@@ -40,11 +84,12 @@ namespace GroupChatExample.CodingTask
 
             // else, use llm to summarize the result
             var agent = new ChatAgent(
-                Constant.AzureGPT4,
-                Constant.AZURE_GPT_4_MODEL_ID,
+                _openAIClient,
+                _model,
                 "admin",
                 @$"Fix the error of given code and explain how you fix it. Put your answer between ```csharp and ```
 Say you don't know how to fix the error if provided reference is not helpful. Please think step by step.
+If the code is too long, you can just provide the fixed part.
 
 # MLNet Reference
 {result}
@@ -93,8 +138,8 @@ I don't know how to fix this error as MLNet reference is not helpful.
 
             // else, use llm to summarize the result
             var agent = new ChatAgent(
-                Constant.AzureGPT4,
-                Constant.AZURE_GPT_4_MODEL_ID,
+                _openAIClient,
+                _model,
                 "admin",
                 @$"You create several mlnet example from reference to resolve given step. Put your answer between ```csharp and ```
 Say you don't have example if provided reference is not helpful. Please think step by step.
@@ -108,6 +153,7 @@ Say you don't have example if provided reference is not helpful. Please think st
 #EndStep#
 
 Example response:
+Here are some examples for reference
 ```csharp
 // example1
 // example2
@@ -144,8 +190,7 @@ I don't have example for this step.
             };
 
             var content = JsonSerializer.Serialize(data);
-            var bearToken = Constant.MLNET101SEARCHTOEKN;
-            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearToken);
+            //_httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearToken);
 
             var response = await _httpClient.PostAsync(baseUri, new StringContent(content, Encoding.UTF8, "application/json"));
 
@@ -208,4 +253,5 @@ I don't have example for this step.
             public string[] Data { get; set; } = Array.Empty<string>();
         }
     }
+
 }

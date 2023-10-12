@@ -28,8 +28,8 @@ internal static partial class Program
 
         // step 2: create group chat
         var engineer = new ChatAgent(
-            Constant.GPT35,
-            Constant.GPT_35_MODEL_ID,
+            Constant.AzureGPT35,
+            Constant.AZURE_GPT_35_MODEL_ID,
             "engineer",
             $@"You are engineer. Follow steps from architect and resolve task, once you resolve the task, reply [COMPLETE].
 For each step, you can provide a csharp code, a markdown or a nuget installation script and send it to notebook_writer.
@@ -51,8 +51,8 @@ The following code might be helpful for you to implement each step.
 
         using var notebookWriterFunction = new NotebookWriterFunction(notebookPath, logger);
         var notebookWriter = new ChatAgent(
-            Constant.GPT35,
-            Constant.GPT_35_MODEL_ID,
+            Constant.AzureGPT35,
+            Constant.AZURE_GPT_35_MODEL_ID,
             "notebook_writer",
             $@"Follow engineer's instruction to create notebook. The full path of notebook should be {notebookPath}.
 if engineer provdes a csharp code, add it as csharp cell.
@@ -67,8 +67,8 @@ if engineer provdes a nuget installation script, add it as nuget installation ce
             });
 
         var admin = new ChatAgent(
-            Constant.GPT35,
-            Constant.GPT_35_MODEL_ID,
+            Constant.AzureGPT35,
+            Constant.AZURE_GPT_35_MODEL_ID,
             "admin",
             "You are admin. You say [TERMINATE] when notebook get created");
 
@@ -124,8 +124,8 @@ if engineer provdes a nuget installation script, add it as nuget installation ce
         };
 
         var groupChat = new GroupChat(
-            Constant.GPT35,
-            Constant.GPT_35_MODEL_ID,
+            Constant.AzureGPT35,
+            Constant.AZURE_GPT_35_MODEL_ID,
             admin,
             new[] {
                 engineer,
@@ -187,8 +187,8 @@ if engineer provdes a nuget installation script, add it as nuget installation ce
 
         // create agents
         var labeller = new ChatAgent(
-            Constant.GPT35,
-            Constant.GPT_35_MODEL_ID,
+            Constant.AzureGPT35,
+            Constant.AZURE_GPT_35_MODEL_ID,
             "labeller",
             @$"You are labeller,
 
@@ -205,8 +205,8 @@ Then you create label.json for csharp code and save the label.json to {workDir}"
             });
 
         var architect = new ChatAgent(
-            Constant.GPT4,
-            Constant.GPT_4_MODEL_ID,
+            Constant.AzureGPT4,
+            Constant.AZURE_GPT_4_MODEL_ID,
             "architect",
             @$"You are architect. you briefly explain what to do in each step.
 your plan should start with adding task name and description.
@@ -248,8 +248,8 @@ For example
 ```");
 
         var engineer = new ChatAgent(
-            Constant.GPT35,
-            Constant.GPT_35_MODEL_ID,
+            Constant.AzureGPT35,
+            Constant.AZURE_GPT_35_MODEL_ID,
             "engineer",
             $@"You are engineer. Follow steps from architect and resolve task, once you resolve the task, reply [COMPLETE].
 For each step, you can provide a csharp code, a markdown or a nuget installation script and send it to notebook_writer.
@@ -271,8 +271,8 @@ The following code might be helpful for you to implement each step.
 
         using var notebookWriterFunction = new NotebookWriterFunction(outputNotebookPath, logger);
         var notebookWriter = new ChatAgent(
-            Constant.GPT35,
-            Constant.GPT_35_MODEL_ID,
+            Constant.AzureGPT35,
+            Constant.AZURE_GPT_35_MODEL_ID,
             "notebook_writer",
             $@"Follow engineer's instruction to create notebook. The full path of notebook should be {outputNotebookPath}.
 if engineer provdes a csharp code, add it as csharp cell.
@@ -288,8 +288,8 @@ if engineer provdes a nuget installation script, add it as nuget installation ce
             });
 
         var admin = new ChatAgent(
-           Constant.GPT4,
-           Constant.GPT_4_MODEL_ID,
+           Constant.AzureGPT4,
+           Constant.AZURE_GPT_4_MODEL_ID,
            "admin",
            @"You are admin. 
 You say [TERMINATE] after engineer says [COMPLETE], otherwise, ask engineer to continue his work");
@@ -347,8 +347,8 @@ You say [TERMINATE] after engineer says [COMPLETE], otherwise, ask engineer to c
         };
 
         var groupChat = new GroupChat(
-            Constant.GPT35,
-            Constant.GPT_35_MODEL_ID,
+            Constant.AzureGPT35,
+            Constant.AZURE_GPT_35_MODEL_ID,
             admin,
             new[]
             {

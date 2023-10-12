@@ -28,8 +28,8 @@ internal static partial class Program
         var mltask101Function = new MLNetExample101Function(new HttpClient());
 
         var architect = new ChatAgent(
-            Constant.GPT35,
-            Constant.GPT_35_MODEL_ID,
+            Constant.AzureGPT35,
+            Constant.AZURE_GPT_35_MODEL_ID,
             "Architect",
             @$"You break down the task into steps and write general instruction for each step. You don't write code!
 Don't be too verbose. Just briefly describe what need to be done in each step. The final step should always be providing end-to-end code solution.
@@ -47,8 +47,8 @@ engineer, implement step 1.
 Once engineer complete one step, provide them with the next step.");
         var engineerFunction = new EngineerFunction(dotnetInteractiveFunction, mltask101Function, logger);
         using var engineer = new ChatAgent(
-            Constant.GPT4,
-            Constant.GPT_4_MODEL_ID,
+            Constant.AzureGPT4,
+            Constant.AZURE_GPT_4_MODEL_ID,
             name: "Engineer",
             roleInformation: @"You are a function caller. You always call CompleteArchitechStep to complete a step.
 Once you complete all steps, create and save the end to end solution. Then reply [COMPLETE]",
@@ -59,8 +59,8 @@ Once you complete all steps, create and save the end to end solution. Then reply
             });
 
         using var examplar = new ChatAgent(
-            Constant.GPT35,
-            Constant.GPT_35_MODEL_ID,
+            Constant.AzureGPT35,
+            Constant.AZURE_GPT_35_MODEL_ID,
             name: "Examplar",
             roleInformation: @"You help Engineer fix code errors by providing MLNet examples.
 Either find similar code for Engineer to reference, or find mlnet api example if Engineer using the mlnet api in a wrong way.",
@@ -71,8 +71,8 @@ Either find similar code for Engineer to reference, or find mlnet api example if
             });
 
         using var executor = new ChatAgent(
-            Constant.GPT35,
-            Constant.GPT_35_MODEL_ID,
+            Constant.AzureGPT35,
+            Constant.AZURE_GPT_35_MODEL_ID,
             name: "Executor",
             roleInformation: @"You run code from Engineer. If Engineer provide nuget install code, install them using InstallNugetPackages.
 If Engineer provide csharp code, running them using RunCode and return result.",
@@ -84,8 +84,8 @@ If Engineer provide csharp code, running them using RunCode and return result.",
 
         var groupChatFunction = new AdminFunction();
         using var admin = new ChatAgent(
-            Constant.GPT35,
-            Constant.GPT_35_MODEL_ID,
+            Constant.AzureGPT35,
+            Constant.AZURE_GPT_35_MODEL_ID,
             name: "Admin",
             roleInformation: "You say [TERMINATE] when task get resolved successfully. Otherwise you ask Engineer to resolve your task.",
             functionMaps: new Dictionary<FunctionDefinition, Func<string, Task<string>>>
@@ -138,8 +138,8 @@ If Engineer provide csharp code, running them using RunCode and return result.",
         };
 
         var groupChat = new GroupChat(
-            Constant.GPT35,
-            Constant.GPT_35_MODEL_ID,
+            Constant.AzureGPT35,
+            Constant.AZURE_GPT_35_MODEL_ID,
             admin,
             new[] { engineer, architect, executor },
             initialChatMessages);
