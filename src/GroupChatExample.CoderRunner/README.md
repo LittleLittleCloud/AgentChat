@@ -1,7 +1,7 @@
 # GroupChat: coder and runner
 
 ## TL;DR
-This example demostrate the coder-runner pattern in group chat. The coder llm writes the code, and the runner llm runs the code and provides feedback to the coder llm. The coder llm then uses the feedback to improve the code. This workflow is repeated until the task is resolved. You can find a result of this example under [output](./output/) folder.
+This example demostrate the coder-runner pattern in group chat. The coder llm writes the code, and the runner llm runs the code and provides feedback to the coder llm. The coder llm then uses the feedback to improve the code. This workflow is repeated until the task is resolved. You can also find a sample pr.txt and chat_history.txt under this [workDir](./workDir/) folder.
 
 ## Pre-requisites
 To run this example, you need to have access to a GPT-0613 model.

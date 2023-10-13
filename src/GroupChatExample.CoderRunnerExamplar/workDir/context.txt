@@ -1,0 +1,51 @@
+
+-Task-
+Train a lightGBM binary classification model using mlnet.
+
+-Completed Steps-
+Install necessary nuget packages and include namespaces
+Create a dummy dataset with at least 100 rows and four features
+Create a binary classification pipeline using lightGBM
+Save the model to lgbm.mlnet
+
+-Current Step-
+
+
+-Existing Code-
+
+```csharp
+#r "nuget:Microsoft.ML, 1.5.2"
+#r "nuget:Microsoft.ML.LightGbm, 1.5.2"
+
+using Microsoft.ML;
+using Microsoft.ML.Data;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+// Define data structure
+public class BinaryClassificationData
+{
+    [LoadColumn(0)] public float Feature1;
+    [LoadColumn(1)] public float Feature2;
+    [LoadColumn(2)] public float Feature3;
+    [LoadColumn(3)] public float Feature4;
+    [LoadColumn(4)] public bool Label;
+}
+
+// Generate dummy data
+var rnd = new Random();
+var data = Enumerable.Range(0, 100)
+            .Select(_ => new BinaryClassificationData
+            {
+                Feature1 = (float)rnd.NextDouble(),
+                Feature2 = (float)rnd.NextDouble(),
+                Feature3 = (float)rnd.NextDouble(),
+                Feature4 = (float)rnd.NextDouble(),
+                Label = rnd.Next(2) == 1
+            }).ToList();
+
+```
+
+
+{"mlContext":"var mlContext = new MLContext();\n\n// Load data from data list\nIDataView dataView = mlContext.Data.LoadFromEnumerable(data);\n\n// Define the data preprocessing pipeline\nvar preprocessingPipeline = mlContext.Transforms.Conversion.MapValueToKey(\"Label\")\n    .Append(mlContext.Transforms.Concatenate(\"Features\", \"Feature1\", \"Feature2\", \"Feature3\", \"Feature4\"))\n    .Append(mlContext.Transforms.NormalizeMinMax(\"Features\"));\n\n// Define the training pipeline using LightGBM\nvar trainer = mlContext.BinaryClassification.Trainers.LightGbm();\n\n// Create the training pipeline\nvar trainingPipeline = preprocessingPipeline.Append(trainer);\n"}
