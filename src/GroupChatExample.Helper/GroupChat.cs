@@ -19,7 +19,8 @@ namespace GroupChatExample.Helper
             "Please speak.",
             "proceed the conversation please",
         };
-        private const string TERMINATE = "[GROUPCHAT_TERMINATE]";
+        public const string TERMINATE = "[GROUPCHAT_TERMINATE]";
+        public const string CLEAR_MESSAGES = "// ignore this line [GROUPCHAT_CLEAR_MESSAGES]";
 
         /// <summary>
         /// terminate the group chat.
@@ -29,6 +30,20 @@ namespace GroupChatExample.Helper
         public async Task<string> TerminateGroupChat(string message)
         {
             return $"{TERMINATE}: {message}";
+        }
+
+        /// <summary>
+        /// Summarize the current conversation.
+        /// </summary>
+        /// <param name="context">conversation context.</param>
+        [FunctionAttribution]
+        public async Task<string> SummarizeConversation(string context)
+        {
+            return @$"{CLEAR_MESSAGES}
+-CONTEXT-
+{context}
+-END OF CONTEXT-
+";
         }
 
         public GroupChat(OpenAIClient client,
@@ -55,21 +70,9 @@ From admin:
 //your message//."
                 );
 
-            var conv = conversationWithName.Select(x =>
-            {
-                var msg = @$"From {x.Item2}:
-{x.Item1.Content}";
-                return new ChatMessage(ChatRole.User, msg);
-            });
+            var conv = this.ProcessConversationsForRolePlay(this.initializeMessages, conversationWithName);
 
-            var initializeConv = this.initializeMessages.Select(x =>
-            {
-                var msg = @$"From {x.Item2}:
-{x.Item1.Content}";
-                return new ChatMessage(ChatRole.User, msg);
-            });
-
-            var messages = new[] { systemMessage }.Concat(initializeConv).Concat(conv);
+            var messages = new[] { systemMessage }.Concat(conv);
 
             var option = new ChatCompletionsOptions
             {
@@ -100,7 +103,7 @@ From admin:
             return null;
         }
 
-        public void AddMessage(string message, string name)
+        public void AddInitializeMessage(string message, string name)
         {
             var chatMessage = new ChatMessage
             {
@@ -132,96 +135,46 @@ From admin:
                 conversationWithName = Enumerable.Empty<(ChatMessage, string)>();
             }
 
+
             var agent = await this.SelectNextSpeakerAsync(conversationWithName) ?? this.admin;
             ChatMessage? result = null;
-            while (true)
-            {
-                var processedConversation = await this.ProcessConversations(agent, this.initializeMessages.Concat(conversationWithName));
-                result = await agent.CallAsync(processedConversation) ?? throw new Exception("No result is returned.");
-
-                // check if result is end with <eof_name>:
-                if (result.Content.EndsWith("<eof_name>:"))
-                {
-                    // content is From name<eof_name>:
-                    // retrieve name
-                    // sleep 10 seconds
-                    await Task.Delay(1000);
-                    var name = result.Content.Substring(5, result.Content.Length - 16);
-                    if (agent.Name == name)
-                    {
-                        agent = this.admin;
-                    }
-                    else
-                    {
-                        // check if name is valid
-                        if (!this.agents.Any(x => x.Name.ToLower() == name.ToLower()))
-                        {
-                            throw new Exception("Invalid name.");
-                        }
-
-                        // ask agent to speak
-                        // step 1: randomly pick a message from candidates
-                        var random = new Random();
-                        var index = random.Next(0, this.pleaseSpeakMessageCandidates.Count());
-                        var message = this.pleaseSpeakMessageCandidates.ElementAt(index);
-                        result = new ChatMessage(ChatRole.Assistant, $"{name}, {message}");
-                        break;
-                    }
-                }
-                else
-                {
-                    break;
-                }
-            }
+            var processedConversation = this.ProcessConversationForAgent(agent.Name, this.initializeMessages, conversationWithName);
+            result = await agent.CallAsync(processedConversation) ?? throw new Exception("No result is returned.");
             
+            // check if result is end with <eof_name>:
+            if (result.Content.EndsWith("<eof_name>:"))
+            {
+                // content is From name<eof_name>:
+                // retrieve name
+                // sleep 10 seconds
+                await Task.Delay(1000);
+                var name = result.Content.Substring(5, result.Content.Length - 16);
+                
+                // check if name is valid
+                if (!this.agents.Any(x => x.Name.ToLower() == name.ToLower()) || agent.Name == name)
+                {
+                    Console.WriteLine($"Invalid name: {name}");
+                    return await this.CallAsync(conversationWithName, maxRound - 1, throwExceptionWhenMaxRoundReached);
+                }
+
+                // ask agent to speak
+                // step 1: randomly pick a message from candidates
+                var random = new Random();
+                var index = random.Next(0, this.pleaseSpeakMessageCandidates.Count());
+                var message = this.pleaseSpeakMessageCandidates.ElementAt(index);
+                result = new ChatMessage(ChatRole.Assistant, $"{name}, {message}");
+            }
 
             this.PrettyPrintMessage(result, agent.Name);
             var updatedConversation = conversationWithName.Append((result, agent.Name));
 
             // if message is terminate message, then terminate the conversation
-            if (this.IsTerminateMessage(result))
+            if (result?.IsGroupChatTerminateMessage() ?? false)
             {
                 return updatedConversation;
             }
 
             return await this.CallAsync(updatedConversation, maxRound - 1, throwExceptionWhenMaxRoundReached);
-        }
-
-        private bool IsTerminateMessage(ChatMessage message)
-        {
-            return message.Content.StartsWith(TERMINATE);
-        }
-
-        private async Task<IEnumerable<ChatMessage>> ProcessConversations(IAgent nextSpeaker, IEnumerable<(ChatMessage, string)> conversationWithName)
-        {
-            var conversation = conversationWithName.Select(c =>
-            {
-                if (c.Item2 == nextSpeaker.Name)
-                {
-                    if (c.Item1.Role == ChatRole.Function)
-                    {
-                        return c.Item1;
-                    }
-                    else
-                    {
-                        var assistantMessage = new ChatMessage(ChatRole.Assistant, c.Item1.Content);
-
-                        return assistantMessage;
-                    }
-                }
-                else
-                {
-                    var content = c.Item1.Content;
-                    // add From name: prefix
-                    content = @$"From {c.Item2}<eof_name>:
-{content}";
-                    var msg = new ChatMessage(ChatRole.User, content);
-
-                    return msg;
-                }
-            });
-
-            return conversation;
         }
 
         public void PrettyPrintMessage(ChatMessage message, string name)

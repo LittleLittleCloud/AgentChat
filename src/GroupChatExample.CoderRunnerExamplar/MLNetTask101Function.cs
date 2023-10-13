@@ -19,54 +19,6 @@ namespace GroupChatExample.CoderRunnerExamplar
             _model = model;
         }
 
-
-        /// <summary>
-        /// Write code to implement given step based on previous context.
-        /// </summary>
-        /// <param name="step">step.</param>
-        /// <param name="previousContext">previous context, like examples/variables/class definition/comments...</param>
-        [FunctionAttribution]
-        public async Task<string> ImplementStep(string step, string previousContext)
-        {
-            var examples = await QueryAsync(step, k: 3);
-            var prompts = $@"
-You are dotnet coder, you write dotnet script to resolve given step.
-You don't need to start from scratch, you can use class/variable defined in previous context.
-
--ML.Net Examples-
-{examples}
--End of ML.Net Examples-
-
--Previous Context-
-{previousContext}
--End of Previous Context-
-
--Step-
-{step}
--End of Step-
-
-Return your code between ```csharp and ``` with comments.
-";
-            var message = new ChatMessage
-            {
-                Content = prompts,
-                Role = ChatRole.System,
-            };
-            var agent = new ChatAgent(
-                _openAIClient,
-                _model,
-                "admin",
-                prompts);
-            var response = await agent.CallAsync(new[] { message });
-
-            if (response is null)
-            {
-                throw new Exception("response is null");
-            }
-
-            return response.Content;
-        }
-
         /// <summary>
         /// fix mlnet error.
         /// </summary>
@@ -89,7 +41,7 @@ Return your code between ```csharp and ``` with comments.
                 "admin",
                 @$"Fix the error of given code and explain how you fix it. Put your answer between ```csharp and ```
 Say you don't know how to fix the error if provided reference is not helpful. Please think step by step.
-If the code is too long, you can just provide the fixed part.
+If the code is too long, you can just provide the fixed part. If the code contains Main function, convert it to top-level statement style.
 
 # MLNet Reference
 {result}
@@ -127,7 +79,7 @@ I don't know how to fix this error as MLNet reference is not helpful.
         /// <param name="k">number of example to return, default is 5.</param>
         /// <param name="threshold">score thresold. default is 0.7</param>
         [FunctionAttribution]
-        public async Task<string> SearchMLNetApiExample(string step, int k = 5, float threshold = 0.7f)
+        public async Task<string> SearchMLNetApiExample(string step, int k = 3, float threshold = 0.8f)
         {
             var result = await QueryAsync(step, k, threshold);
             // if no result is found, return it
@@ -144,20 +96,18 @@ I don't know how to fix this error as MLNet reference is not helpful.
                 @$"You create several mlnet example from reference to resolve given step. Put your answer between ```csharp and ```
 Say you don't have example if provided reference is not helpful. Please think step by step.
 
-# Reference
+- MLNet Reference -
+```csharp
 {result}
-# End
+```
 
-#Step#
+- step -
 {step}
-#EndStep#
 
 Example response:
-Here are some examples for reference
+Here are some examples that might be helpful to resolve the step.
 ```csharp
-// example1
-// example2
-// example3
+xxx
 ```
 ---
 I don't have example for this step.
@@ -176,14 +126,13 @@ I don't have example for this step.
 
         private async Task<string> QueryAsync(string query, int k = 5, float threshold = 0.7f)
         {
-            var baseUri = "https://littlelittlecloud-mlnet-samples.hf.space/--replicas/kkvq6/api/search";
-            var documentID = "mlnet_notebook_examples_v1.json";
+            var baseUri = "https://littlelittlecloud-mlnet-samples.hf.space/--replicas/2bbq8/api/search";
             var data = new
             {
                 data = new object[]
                 {
                     query,
-                    documentID,
+                    null,
                     k,
                     threshold,
                 },
@@ -227,9 +176,8 @@ I don't have example for this step.
                 var sb = new StringBuilder();
                 foreach (var record in records)
                 {
-                    sb.AppendLine($"## ML.Net example ##");
                     sb.AppendLine(record.Content.ToString());
-                    sb.AppendLine($"## End of ML.Net example ##");
+                    sb.AppendLine("");
                 }
 
                 return sb.ToString();

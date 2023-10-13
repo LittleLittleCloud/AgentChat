@@ -45,8 +45,8 @@ var b = 2;
 end
 
 Here're some rules to follow when you write dotnet code:
-- Don't write main function, just write code, like what python does.
-- Don't use `using` statement. Runner can't handle it.
+- Use top-level statements, remove main function, just write code, like what python does.
+- Remove all `using` statement. Runner can't handle it.
 - Try to use `var` instead of explicit type.
 - Try avoid using external library.
 - Don't use external data source, like file, database, etc. Create a dummy dataset if you need.
@@ -67,18 +67,11 @@ You can only reply with RunCodeFunction or InstallNugetPackagesFunction or 'No c
         });
 
 var admin = new ChatAgent(
-    openAIClient,
-    model,
+    Constant.AzureGPT4,
+    Constant.AZURE_GPT_4_MODEL_ID,
     "Admin",
     @"You are admin, you provide task to coder and runner.
-For each step, you ask Coder to implement the step, then ask Runner to run the code.
-If the code is not valid, ask Coder to fix the code.
-e.g.
-Coder, implement download file step
-Runner, run code.
-Coder, fix the code.
-
-If current step is resolved, you ask Coder to implement next step.
+For each step, you ask Coder to implement the step, then ask Runner to run the code. If there's error, you ask Coder to fix the error.
 If all steps resolved, you terminate group chat. Avoid free chatting.");
 
 var groupChat = new GroupChat(
@@ -93,19 +86,17 @@ var groupChat = new GroupChat(
 
 admin.FunctionMaps.Add(groupChat.TerminateGroupChatFunction, groupChat.TerminateGroupChatWrapper);
 
-groupChat.AddMessage("Welcome to the group chat! Work together to resolve my task.", admin.Name);
-groupChat.AddMessage("I'll write dotnet code to resolve Admin's task. I'll fix any bugs from Runner", coder.Name);
-groupChat.AddMessage("I'll run code from Coder and return result.", runner.Name);
-groupChat.AddMessage($"The task is: retrieve the latest PR from mlnet repo, print the result and save the result to pr.txt.", admin.Name);
-groupChat.AddMessage($"The link to mlnet repo is: https://github.com/dotnet/machinelearning. you don't need a token to use github pr api. Make sure to include a User-Agent header, otherwise github will reject it.", admin.Name);
-groupChat.AddMessage(@$"Here's the step-by-step plan
+groupChat.AddInitializeMessage("Welcome to the group chat! Work together to resolve my task.", admin.Name);
+groupChat.AddInitializeMessage("Hey", coder.Name);
+groupChat.AddInitializeMessage("Hey", runner.Name);
+groupChat.AddInitializeMessage($"The task is: retrieve the latest PR from mlnet repo, print the result and save the result to pr.txt.", admin.Name);
+groupChat.AddInitializeMessage($"The link to mlnet repo is: https://github.com/dotnet/machinelearning. you don't need a token to use github pr api. Make sure to include a User-Agent header, otherwise github will reject it.", admin.Name);
+groupChat.AddInitializeMessage(@$"Here's the step-by-step plan
 1. Send a GET request to the GitHub API to retrieve the list of pull requests for the mlnet repo.
 2. Parse the response JSON to extract the latest pull request.
 3. Print the result to the console and save the result to a file named ""pr.txt"".
 ", admin.Name);
-groupChat.AddMessage($@"Coder, write code to resolve step 1.", admin.Name);
-
-var conversation = await groupChat.CallAsync(maxRound: 30);
+var conversation = await admin.SendMessageAsync("Coder, write code to resolve step 1", groupChat, 100, false);
 
 // log conversation to chat_history.txt
 if(conversation is not null)

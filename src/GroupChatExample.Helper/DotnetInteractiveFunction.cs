@@ -16,7 +16,7 @@ namespace GroupChatExample.Helper
         private string? _notebookPath;
 
 
-        public DotnetInteractiveFunction(InteractiveService interactiveService, string? notebookPath = null, Logger? logger = null)
+        public DotnetInteractiveFunction(InteractiveService interactiveService, string? notebookPath = null, Logger? logger = null, bool continueFromExistingNotebook = false)
         {
             this._interactiveService = interactiveService;
             this._logger = logger;
@@ -24,22 +24,53 @@ namespace GroupChatExample.Helper
 
             if (this._notebookPath != null)
             {
-                // remove existing notebook
-                if (File.Exists(this._notebookPath))
+                if (continueFromExistingNotebook == false)
                 {
-                    logger?.Log("Removing existing notebook.");
-                    File.Delete(this._notebookPath);
+                    // remove existing notebook
+                    if (File.Exists(this._notebookPath))
+                    {
+                        logger?.Log("Removing existing notebook.");
+                        File.Delete(this._notebookPath);
+                    }
+
+                    // create an empty notebook
+                    logger?.Log("Creating an empty notebook.");
+                    var document = new InteractiveDocument();
+
+                    using var stream = File.OpenWrite(_notebookPath);
+                    Notebook.Write(document, stream);
+                    stream.Flush();
+                    stream.Dispose();
+                    logger?.Log($"A new Notebook: {_notebookPath} is created.");
                 }
+                else if (continueFromExistingNotebook == true && File.Exists(this._notebookPath))
+                {
+                    logger?.Log("Continue from existing notebook.");
+                    // load existing notebook
+                    using var readStream = File.OpenRead(this._notebookPath);
+                    var document = Notebook.ReadAsync(readStream).Result;
+                    foreach(var cell in document.Elements)
+                    {
+                        if (cell.KernelName == "csharp")
+                        {
+                            var code = cell.Contents;
+                            logger?.Log($"Submitting existing code: {code}");
+                            this._interactiveService.SubmitCSharpCodeAsync(code, default).Wait();
+                        }
+                    }
+                }
+                else
+                {
+                    // create an empty notebook
+                    logger?.Log("Creating an empty notebook.");
+                    var document = new InteractiveDocument();
 
-                // create an empty notebook
-                logger?.Log("Creating an empty notebook.");
-                var document = new InteractiveDocument();
-
-                using var stream = File.OpenWrite(_notebookPath);
-                Notebook.Write(document, stream);
-                stream.Flush();
-                stream.Dispose();
-                logger?.Log($"A new Notebook: {_notebookPath} is created.");
+                    using var stream = File.OpenWrite(_notebookPath);
+                    Notebook.Write(document, stream);
+                    stream.Flush();
+                    stream.Dispose();
+                    logger?.Log($"A new Notebook: {_notebookPath} is created.");
+                }
             }
         }
 

@@ -55,7 +55,6 @@ namespace GroupChatExample.Helper
             // if chatMessage is function call, call that function
             if (chatMessage.FunctionCall is FunctionCall function)
             {
-                ChatMessage? functionResultMessage = null;
                 if (_functionMaps?.FirstOrDefault(kv => kv.Key.Name == function.Name).Value is Func<string, Task<string>> func)
                 {
                     var parameters = function.Arguments;
@@ -64,25 +63,26 @@ namespace GroupChatExample.Helper
                     try
                     {
                         var functionResult = await func(parameters);
-                        functionResultMessage = new ChatMessage(ChatRole.Function, functionResult);
-                        functionResultMessage.Name = function.Name;
+                        chatMessage.Content = functionResult;
+                        chatMessage.Name = function.Name;
 
                     }
                     catch (Exception e)
                     {
-                        functionResultMessage = new ChatMessage(ChatRole.Function, $"Error: {e.Message}");
-                        functionResultMessage.Name = function.Name;
+                        var errorMessage = $"Error: {e.Message}";
+                        chatMessage.Content = errorMessage;
+                        chatMessage.Name = function.Name;
                     }
                 }
                 else
                 {
                     var availableFunctions = _functionMaps?.Select(kv => kv.Key.Name)?.ToList() ?? new List<string>();
-                    functionResultMessage = new ChatMessage(ChatRole.User, $"Unknown function: {function.Name}. Available functions: {string.Join(",", availableFunctions)}");
+                    var unknownFunctionMessage = $"Unknown function: {function.Name}. Available functions: {string.Join(",", availableFunctions)}";
+                    chatMessage.Content = unknownFunctionMessage;
+                    chatMessage.FunctionCall = null;
                 }
 
-                //return await CallAsync(conversation.Concat(new ChatMessage[] { chatMessage, functionResultMessage }), ct);
-
-                return functionResultMessage;
+                return chatMessage;
             }
             else
             {
@@ -97,12 +97,13 @@ namespace GroupChatExample.Helper
 
             var option = new ChatCompletionsOptions()
             {
-                Temperature = 0.7f,
+                Temperature = 0.9f,
                 MaxTokens = 1024,
                 Functions = _functionMaps?.Select(kv => kv.Key)?.ToList() ?? new List<FunctionDefinition>(),
             };
 
-            option.StopSequences.Add("<eof_name>:");
+            option.StopSequences.Add("<eof_name>");
+            option.StopSequences.Add("<eof_msg>");
 
             foreach (var message in messages)
             {
