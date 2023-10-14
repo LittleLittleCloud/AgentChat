@@ -12,7 +12,7 @@ This example is for a proof-of-concept purpose only. It's not production ready a
 Cost will be applied to your openai account when you run this example.
 
 ## How to run
-1. Set up the environment variable `OPENAI_API_KEY` with your openai api key.
+1. [Configure environment for GPT access.](../../README.md#how-to-configure-environment-for-gpt-access)
 2. Run the example with `dotnet run` command.
 
 The built-in task is to print out the date today and the output should be the current date. You can also try the following tasks:

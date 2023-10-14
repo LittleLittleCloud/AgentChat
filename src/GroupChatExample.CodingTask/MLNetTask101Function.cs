@@ -41,7 +41,7 @@ namespace GroupChatExample.CodingTask
             // else, use llm to summarize the result
             var agent = new ChatAgent(
                 Constant.AzureGPT4,
-                Constant.AZURE_GPT_4_MODEL_ID,
+                Constant.GPT_4_MODEL_ID,
                 "admin",
                 @$"Fix the error of given code and explain how you fix it. Put your answer between ```csharp and ```
 Say you don't know how to fix the error if provided reference is not helpful. Please think step by step.
@@ -94,7 +94,7 @@ I don't know how to fix this error as MLNet reference is not helpful.
             // else, use llm to summarize the result
             var agent = new ChatAgent(
                 Constant.AzureGPT4,
-                Constant.AZURE_GPT_4_MODEL_ID,
+                Constant.GPT_4_MODEL_ID,
                 "admin",
                 @$"You create several mlnet example from reference to resolve given step. Put your answer between ```csharp and ```
 Say you don't have example if provided reference is not helpful. Please think step by step.

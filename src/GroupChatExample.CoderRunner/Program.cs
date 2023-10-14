@@ -17,8 +17,8 @@ if (Directory.Exists(workDir))
 Directory.CreateDirectory(workDir);
 
 // set up openai client and model id to use.
-var model = Constant.AZURE_GPT_35_MODEL_ID;
-var openAIClient = Constant.AzureGPT35;
+var model = Constant.GPT_35_MODEL_ID;
+var openAIClient = Constant.GPT;
 
 using var service = new InteractiveService(workDir);
 await service.StartAsync(workDir, default);

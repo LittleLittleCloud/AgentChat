@@ -34,8 +34,8 @@ namespace GroupChatExample.CodingTask
         public async Task<string> CompleteArchitectStep(string task, string taskDescirption, string step, string existingSolution)
         {
             using var engineer = new ChatAgent(
-            Constant.AzureGPT35,
-            Constant.AZURE_GPT_35_MODEL_ID,
+            Constant.AzureOpenAI,
+            Constant.GPT_35_MODEL_ID,
             name: "Engineer",
             roleInformation: @$"Resolve the step using csharp and ask Executor to verify your code.
 Once Executor verify your code, reply [STEP_COMPLETE]. If your code has error, you can ask Examplar to help you fix it.
@@ -72,8 +72,8 @@ Examplar, can you help me fix the error in the code above?
 ...");
 
             using var examplar = new ChatAgent(
-                Constant.AzureGPT35,
-                Constant.AZURE_GPT_35_MODEL_ID,
+                Constant.AzureOpenAI,
+                Constant.GPT_35_MODEL_ID,
                 name: "Examplar",
                 roleInformation: @"You either fix error from engineer's code, or find mlnet api example if Engineer using the mlnet api in a wrong way.",
                 functionMaps: new Dictionary<FunctionDefinition, Func<string, Task<string>>>
@@ -83,8 +83,8 @@ Examplar, can you help me fix the error in the code above?
                 });
 
             using var executor = new ChatAgent(
-                Constant.AzureGPT35,
-                Constant.AZURE_GPT_35_MODEL_ID,
+                Constant.AzureOpenAI,
+                Constant.GPT_35_MODEL_ID,
                 name: "Executor",
                 roleInformation: @"You run code from Engineer. If Engineer provide nuget install code, install them using InstallNugetPackages.
 If Engineer provide csharp code, running them using RunCode and return result.",
@@ -96,8 +96,8 @@ If Engineer provide csharp code, running them using RunCode and return result.",
 
             var terminateGroupFunction = new AdminFunction();
             using var admin = new ChatAgent(
-                Constant.AzureGPT35,
-                Constant.AZURE_GPT_35_MODEL_ID,
+                Constant.AzureOpenAI,
+                Constant.GPT_35_MODEL_ID,
                 name: "Admin",
                 roleInformation: "You terminate group chat when Engineer resolve given step successfully. If code has bug. you ask Engineer to resolve the bug.",
                 functionMaps: new Dictionary<FunctionDefinition, Func<string, Task<string>>>
@@ -151,8 +151,8 @@ If Engineer provide csharp code, running them using RunCode and return result.",
             };
 
             var group = new GroupChat(
-                Constant.AzureGPT35,
-                Constant.AZURE_GPT_35_MODEL_ID,
+                Constant.AzureOpenAI,
+                Constant.GPT_35_MODEL_ID,
                 admin,
                 new[]
                 {

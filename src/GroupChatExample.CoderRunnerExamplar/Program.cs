@@ -14,8 +14,8 @@ if (!Directory.Exists(workDir))
 }
 
 // set up openai client and model id to use.
-var openAIClient = Constant.AzureGPT4;
-var model = Constant.AZURE_GPT_4_MODEL_ID;
+var openAIClient = Constant.GPT;
+var model = Constant.GPT_4_MODEL_ID;
 
 using var service = new InteractiveService(workDir);
 using var httpClient = new HttpClient();

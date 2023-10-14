@@ -5,6 +5,18 @@ This repo contains the code examples for group chat.
 [![CI](https://github.com/LittleLittleCloud/CopilotBuilder/actions/workflows/ci.yml/badge.svg)](https://github.com/LittleLittleCloud/CopilotBuilder/actions/workflows/ci.yml)
 [![nightly-build](https://github.com/LittleLittleCloud/CopilotBuilder/actions/workflows/nightly-build.yml/badge.svg)](https://github.com/LittleLittleCloud/CopilotBuilder/actions/workflows/nightly-build.yml)
 
+## How to configure environment for GPT access
+In order to run examples under this repo, you need to provide the following environment variables:
+
+#### OpenAI
+- `OPENAI_API_KEY` - your OpenAI API key
+
+#### Azure OpenAI
+- `AZURE_OPENAI_ENDPOINT` - your Azure OpenAI endpoint
+- `AZURE_OPENAI_API_KEY` - your Azure OpenAI key
+- (Optional) `AZURE_GPT_35_MODEL_ID` - GPT-3.5 model name (default: `gpt-35-turbo`)
+- (Optional) `AZURE_GPT_4_MODEL_ID` - GPT-4 model name (default: `gpt-4.0`)
+
 ## Examples
 <!-- table -->
 <!-- column: example name, path, description -->

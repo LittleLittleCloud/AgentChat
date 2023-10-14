@@ -10,25 +10,26 @@ namespace GroupChatExample.Helper
     public static class Constant
     {
         public static string MLNET101SEARCHTOEKN { get; set; } = Environment.GetEnvironmentVariable("MLNET101SEARCHTOEKN");
-        public static string AZURE_GPT_35_MODEL_ID { get; set; } = "gpt-35-turbo-16k";
+        public static string GPT_35_MODEL_ID { get; set; } = Environment.GetEnvironmentVariable("AZURE_GPT_35_MODEL_ID") ?? "gpt-35-turbo";
 
-        public static string AZURE_GPT_4_MODEL_ID { get; set; } = "gpt-4";
+        public static string GPT_4_MODEL_ID { get; set; } = Environment.GetEnvironmentVariable("AZURE_GPT_4_MODEL_ID") ?? "gpt-4";
 
-        public static string GPT_35_API_KEY { get; set; } = Environment.GetEnvironmentVariable("GPT_35_API_KEY");
+        public static string? OPENAI_API_KEY { get; set; } = Environment.GetEnvironmentVariable("OPENAI_API_KEY");
 
-        public static string GPT_4_API_KEY { get; set; } = Environment.GetEnvironmentVariable("GPT_4_API_KEY");
+        public static string? AZURE_OPENAI_API_KEY { get; set; } = Environment.GetEnvironmentVariable("AZURE_OPENAI_API_KEY");
+        public static string? AZURE_OPENAI_ENDPOINT { get; set; } = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT");
 
-        public static string GPT_35_ENDPOINT { get; set; } = Environment.GetEnvironmentVariable("GPT_35_ENDPOINT");
+        public static OpenAIClient? AzureOpenAI { get; set; } = AZURE_OPENAI_API_KEY != null ? new OpenAIClient(
+            new Uri(AZURE_OPENAI_ENDPOINT),
+            new Azure.AzureKeyCredential(AZURE_OPENAI_API_KEY)) : null;
 
-        public static string GPT_4_ENDPOINT { get; set; } = Environment.GetEnvironmentVariable("GPT_4_ENDPOINT");
+        public static OpenAIClient? OpenAIOpenAI { get; set; } = OPENAI_API_KEY != null ? new OpenAIClient(OPENAI_API_KEY) : null;
 
-        public static OpenAIClient AzureGPT35 { get; set; } = new OpenAIClient(
-            new Uri(GPT_35_ENDPOINT),
-            new Azure.AzureKeyCredential(GPT_35_API_KEY));
+        public static OpenAIClient GPT { get; set; } = AzureOpenAI ?? OpenAIOpenAI ?? throw new Exception(@"No OpenAI client is available. Please choose one of the folloiwng option
+- Set `OPENAI_API_KEY`
+- Set `AZURE_OPENAI_API_KEY and AZURE_OPENAI_ENDPOINT`
+in your environment to provide access to OpenAI GPT model");
 
-        public static OpenAIClient AzureGPT4 { get; set; } = new OpenAIClient(
-                       new Uri(GPT_4_ENDPOINT),
-                                  new Azure.AzureKeyCredential(GPT_4_API_KEY));
 
     }
 }

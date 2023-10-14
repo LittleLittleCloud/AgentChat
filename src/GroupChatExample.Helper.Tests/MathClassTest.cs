@@ -43,8 +43,8 @@ Question #{question_index}:
         public async Task MathChat_End_To_End_Test()
         {
             var teacher = new ChatAgent(
-                Constant.AzureGPT35,
-                Constant.AZURE_GPT_35_MODEL_ID,
+                Constant.GPT,
+                Constant.GPT_35_MODEL_ID,
                 "Teacher",
                 $@"You act as a preschool math teacher. Here's your workflow in pseudo code:
 -workflow-
@@ -62,8 +62,8 @@ else
                 });
 
             var student = new ChatAgent(
-                Constant.AzureGPT35,
-                Constant.AZURE_GPT_35_MODEL_ID,
+                Constant.AzureOpenAI,
+                Constant.GPT_35_MODEL_ID,
                 "Student",
                 $@"You act as a preschool student. Here's your workflow in pseudo code:
 -workflow-
@@ -85,8 +85,8 @@ sorry, the answer should be 2, not 3
                     { this.AnswerQuestionFunction, this.AnswerQuestionWrapper }
                 });
             var admin = new ChatAgent(
-                Constant.AzureGPT35,
-                Constant.AZURE_GPT_35_MODEL_ID,
+                Constant.AzureOpenAI,
+                Constant.GPT_35_MODEL_ID,
                 "Admin",
                 $@"You act as an admin. Here's your workflow:
 -workflow-
@@ -106,8 +106,8 @@ the number of resolved question is 0 and it's smaller than 5, please create a qu
 ");
 
             var group = new GroupChat(
-                Constant.AzureGPT35,
-                Constant.AZURE_GPT_35_MODEL_ID,
+                Constant.AzureOpenAI,
+                Constant.GPT_35_MODEL_ID,
                 admin,
                 new[]
                 {
