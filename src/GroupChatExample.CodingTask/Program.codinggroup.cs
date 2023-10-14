@@ -24,11 +24,11 @@ internal static partial class Program
         using var interactiveService = new InteractiveService(workingDir);
         await interactiveService.StartAsync(workingDir, CancellationToken.None);
 
-        using var dotnetInteractiveFunction = new DotnetInteractiveFunction(interactiveService, logger);
+        using var dotnetInteractiveFunction = new DotnetInteractiveFunction(interactiveService, logger: logger);
         var mltask101Function = new MLNetExample101Function(new HttpClient());
 
         var architect = new ChatAgent(
-            Constant.GPT35,
+            Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             "Architect",
             @$"You break down the task into steps and write general instruction for each step. You don't write code!
@@ -47,7 +47,7 @@ engineer, implement step 1.
 Once engineer complete one step, provide them with the next step.");
         var engineerFunction = new EngineerFunction(dotnetInteractiveFunction, mltask101Function, logger);
         using var engineer = new ChatAgent(
-            Constant.GPT4,
+            Constant.GPT,
             Constant.GPT_4_MODEL_ID,
             name: "Engineer",
             roleInformation: @"You are a function caller. You always call CompleteArchitechStep to complete a step.
@@ -59,7 +59,7 @@ Once you complete all steps, create and save the end to end solution. Then reply
             });
 
         using var examplar = new ChatAgent(
-            Constant.GPT35,
+            Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             name: "Examplar",
             roleInformation: @"You help Engineer fix code errors by providing MLNet examples.
@@ -71,7 +71,7 @@ Either find similar code for Engineer to reference, or find mlnet api example if
             });
 
         using var executor = new ChatAgent(
-            Constant.GPT35,
+            Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             name: "Executor",
             roleInformation: @"You run code from Engineer. If Engineer provide nuget install code, install them using InstallNugetPackages.
@@ -84,7 +84,7 @@ If Engineer provide csharp code, running them using RunCode and return result.",
 
         var groupChatFunction = new AdminFunction();
         using var admin = new ChatAgent(
-            Constant.GPT35,
+            Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             name: "Admin",
             roleInformation: "You say [TERMINATE] when task get resolved successfully. Otherwise you ask Engineer to resolve your task.",
@@ -138,7 +138,7 @@ If Engineer provide csharp code, running them using RunCode and return result.",
         };
 
         var groupChat = new GroupChat(
-            Constant.GPT35,
+            Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             admin,
             new[] { engineer, architect, executor },

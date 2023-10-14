@@ -1,0 +1,48 @@
+
+-Task-
+Train a lightGBM binary classification model using mlnet
+
+-Completed Steps-
+install necessary nuget packages (Microsoft.ML and Microsoft.ML.LightGBM) and include namespaces
+create a DummyData class with four numeric features and one bool label
+generate 1000 rows of DummyData, and split the data into train and test set
+Create a LightGBM binary classification pipeline. The pipeline should first concatenate all features into a single column, followed by a LightGbm binary classification trainer
+train the model from pipeline and train set and evaluate the model with test data
+save the model to lgbm.mlnet
+
+-Current Step-
+
+
+-Existing Functions-
+```csharp
+IEnumerable<DummyData> GenerateRandomDataPoints(int count, int seed = 0)
+```
+
+-Existing Variables-
+```csharp
+var mlContext = new Microsoft.ML.MLContext()
+var dataPoints = GenerateRandomDataPoints(1000).ToList()
+var allData = mlContext.Data.LoadFromEnumerable(dataPoints)
+var trainTestSplit = mlContext.Data.TrainTestSplit(allData)
+var trainingData = trainTestSplit.TrainSet
+var testData = trainTestSplit.TestSet
+var pipeline = mlContext.Transforms.Concatenate("Features", "Feature1", "Feature2", "Feature3", "Feature4").Append(mlContext.BinaryClassification.Trainers.LightGbm())
+var model = pipeline.Fit(trainingData)
+var predictions = model.Transform(testData)
+var metrics = mlContext.BinaryClassification.Evaluate(predictions)
+mlContext.Model.Save(model, trainingData.Schema, "lgbm.mlnet")
+```
+
+-Existing Class-
+```csharp
+public class DummyData
+{
+    public float Feature1 { get; set; }
+    public float Feature2 { get; set; }
+    public float Feature3 { get; set; }
+    public float Feature4 { get; set; }
+    public bool Label { get; set; }
+}
+```
+
+Model saved to lgbm.mlnet

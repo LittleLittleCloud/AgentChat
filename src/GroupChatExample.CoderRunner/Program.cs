@@ -16,59 +16,84 @@ if (Directory.Exists(workDir))
 // create workDir
 Directory.CreateDirectory(workDir);
 
+// set up openai client and model id to use.
+var model = Constant.GPT_35_MODEL_ID;
+var openAIClient = Constant.GPT;
+
 using var service = new InteractiveService(workDir);
 await service.StartAsync(workDir, default);
 var logger = new Logger(workDir);
-using var dotnetInteractiveFunction = new DotnetInteractiveFunction(service, logger);
-var OPENAI_API_KEY = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new InvalidOperationException("OPENAI_API_KEY is not set");
-var model = "gpt-3.5-turbo-0613";
-var openAIClient = new OpenAIClient(OPENAI_API_KEY);
+using var dotnetInteractiveFunction = new DotnetInteractiveFunction(service, logger: logger);
 var fixInvalidJsonFunction = new FixInvalidJsonFunctionWrapper(openAIClient, model);
 
 var coder = new ChatAgent(
         openAIClient,
         model,
         "Coder",
-        @"You are dotnet coder, you write dotnet script to resolve tasks.
-First, create a step-by-step plan for the task. 
-Then write code to resolve each step.
-Complete one step at a time, once you complete a step, you ask runner to run that step for you.
-e.g.
-- step1: download file
-```
-...
-```
+        @"You act as dotnet coder, you write dotnet script to resolve tasks.
+Here's the workflow you follow:
+-workflow-
+if no_current_step
+    ask_for_current_step
+else
+    write_code_to_resolve_current_step
 
-runner, run step 1 for me.
+if code_has_error
+    fix_code_error
 
-Once you complete all steps, rely [COMPLETE].
-Here're some rules to follow when you write dotnet code:
-- Write code in dotnet interactive. You can use `#r` to reference nuget package.
-- Don't write function, just write code, like what python does.
-- Don't use `using` statement. Runner can't handle it.
+wait_for_next_step
+
+-end-
+
+Here're some rules to follow on write_code_to_resolve_current_step:
+- put code between ```csharp and ```
+- Use top-level statements, remove main function, just write code, like what python does.
+- Remove all `using` statement. Runner can't handle it.
 - Try to use `var` instead of explicit type.
 - Try avoid using external library.
+- Don't use external data source, like file, database, etc. Create a dummy dataset if you need.
 - Always print out the result to console. Don't write code that doesn't print out anything.
+
+Here are some examples for ask_for_current_step:
+- No current step is provided. Please provide current step.
+
+Here are some examples for write_code_to_resolve_current_step:
+```nuget
+xxx
+```
+```csharp
+xxx
+```
+
+Here are some examples for fix_code_error:
+The error is caused by xxx. Here's the fix code
+```csharp
+xxx
+```
 ");
 
 var runner = new ChatAgent(
         openAIClient,
         model,
         "Runner",
-        @"You are a helpful code runner. When a new message come, do the following check step by step
-- If the new message contains no code block or nuget packages to install, say 'No code available'.
-- If the new message contains csharp block, call run code function to run the code. Pass the code as is.
-- If the new message contains nuget packages to install, call install nuget package function to install packages.
+        @"You act as dotnet runner, you run dotnet script and install nuget packages. Here's the workflow you follow:
+-workflow-
+if code_is_available_from_latest_message
+    if nuget_packages_is_available_from_latest_message
+        install_nuget_packages
+    run_code_from_latest_message
+else
+    ask_for_code_to_run
+-end-
 
-Here're some examples
-- Example 1 -
-No code available
+Here are some examples for ask_for_code_to_run:
+- No code is provided. Please provide code to run.
 
-- Example 2 -
-RunCode( //arguments)
+Here are some examples for run_code_from_latest_message:
+- run_code // code to run
 
-- Example 3 -
-InstallNugetPackages( //arguments)
+Here are some examples for install_nuget_packages:
+- install_nuget_packages // nuget packages to install
 ",
         new Dictionary<FunctionDefinition, Func<string, Task<string>>>
         {
@@ -80,7 +105,24 @@ var admin = new ChatAgent(
     openAIClient,
     model,
     "Admin",
-    @"You are admin, you provide task to coder and runner. You terminate group chat when task resolved successfully. Otherwise you ask coder to resolve your task.");
+    @"You act as group admin that lead other agents to resolve task together. Here's the workflow you follow:
+-workflow-
+if all_steps_are_resolved
+    terminate_chat
+else
+    resolve_step
+-end-
+
+The task is
+Retrieve the latest PR from mlnet repo, print the result and save the result to pr.txt.
+The steps to resolve the task are:
+1. Send a GET request to the GitHub API to retrieve the list of pull requests for the mlnet repo.
+2. Parse the response JSON to extract the latest pull request.
+3. Print the result to the console and save the result to a file named ""pr.txt"".
+
+Here are some examples for resolve_step:
+- The step to resolve is xxx, let's work on this step.
+");
 
 var groupChat = new GroupChat(
     openAIClient,
@@ -94,13 +136,26 @@ var groupChat = new GroupChat(
 
 admin.FunctionMaps.Add(groupChat.TerminateGroupChatFunction, groupChat.TerminateGroupChatWrapper);
 
-groupChat.AddMessage("Welcome to the group chat! Work together to resolve my task.", admin.Name);
-groupChat.AddMessage("I'll write dotnet code to resolve Admin's task. I'll fix any bugs from Runner", coder.Name);
-groupChat.AddMessage("I'll run code from Coder and return result.", runner.Name);
-groupChat.AddMessage($"The task is: retrieve the latest PR from mlnet repo, print the result and save the result to pr.txt.", admin.Name);
-groupChat.AddMessage($"The link to mlnet repo is: https://github.com/dotnet/machinelearning. you don't need a token to use github pr api. Make sure to include a User-Agent header, otherwise github will reject it.", admin.Name);
+groupChat.AddInitializeMessage("Welcome to the group chat! Work together to resolve my task.", admin.Name);
+groupChat.AddInitializeMessage("Hey I'm Coder", coder.Name);
+groupChat.AddInitializeMessage("Hey I'm Runner", runner.Name);
+groupChat.AddInitializeMessage($"The link to mlnet repo is: https://github.com/dotnet/machinelearning. you don't need a token to use github pr api. Make sure to include a User-Agent header, otherwise github will reject it.", admin.Name);
+groupChat.AddInitializeMessage(@$"Here's the workflow for this group chat
+-groupchat workflow-
+if all_steps_are_resolved
+    admin_terminate_chat
+else
 
-var conversation = await groupChat.CallAsync(maxRound: 20);
+admin_give_step_to_resolve
+coder_write_code_to_resolve_step
+runner_run_code_from_coder
+if code_is_correct
+    admin_give_next_step
+else
+    coder_fix_code_error
+", admin.Name);
+
+var conversation = await admin.SendMessageAsync("Here's the first step to resolve: Send a GET request to the GitHub API to retrieve the list of pull requests for the mlnet repo.", groupChat, 30, false);
 
 // log conversation to chat_history.txt
 if(conversation is not null)

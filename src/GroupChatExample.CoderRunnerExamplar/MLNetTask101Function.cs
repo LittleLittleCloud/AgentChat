@@ -1,37 +1,33 @@
 ﻿using Azure.AI.OpenAI;
 using GroupChatExample.Helper;
-using FluentAssertions.Equivalency;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using System.Web;
 
-namespace GroupChatExample.CodingTask
+namespace GroupChatExample.CoderRunnerExamplar
 {
-    public partial class MLNetExample101Function
+    public partial class MLNetExamplarFunction
     {
         private HttpClient _httpClient;
+        private OpenAIClient _openAIClient;
+        private string _model;
 
-        public MLNetExample101Function(HttpClient httpClient)
+        public MLNetExamplarFunction(HttpClient httpClient, OpenAIClient openAIClient, string model)
         {
             _httpClient = httpClient;
+            _openAIClient = openAIClient;
+            _model = model;
         }
 
         /// <summary>
-        /// fix error code.
+        /// fix mlnet error.
         /// </summary>
         /// <param name="code">code with error</param>
         /// <param name="errorMessage">error message.</param>
-        /// <param name="k">number of example to return. default is 5.</param>
-        /// <param name="threshold">score thresold. default is 0.8</param>
         [FunctionAttribution]
-        public async Task<string> FixError(string code, string errorMessage, int k = 5, float threshold = 0.8f)
+        public async Task<string> FixMLNetError(string code, string errorMessage)
         {
-            var result = await QueryAsync(code, k, threshold);
+            var result = await QueryAsync(code, 3, 0.8f);
             // if no result is found, return it
             if (result.StartsWith("No example found"))
             {
@@ -40,11 +36,12 @@ namespace GroupChatExample.CodingTask
 
             // else, use llm to summarize the result
             var agent = new ChatAgent(
-                Constant.GPT,
-                Constant.GPT_4_MODEL_ID,
+                _openAIClient,
+                _model,
                 "admin",
                 @$"Fix the error of given code and explain how you fix it. Put your answer between ```csharp and ```
 Say you don't know how to fix the error if provided reference is not helpful. Please think step by step.
+If the code is too long, you can just provide the fixed part. If the code contains Main function, convert it to top-level statement style.
 
 # MLNet Reference
 {result}
@@ -82,7 +79,7 @@ I don't know how to fix this error as MLNet reference is not helpful.
         /// <param name="k">number of example to return, default is 5.</param>
         /// <param name="threshold">score thresold. default is 0.7</param>
         [FunctionAttribution]
-        public async Task<string> SearchMLNetApiExample(string step, int k = 5, float threshold = 0.7f)
+        public async Task<string> SearchMLNetApiExample(string step, int k = 3, float threshold = 0.8f)
         {
             var result = await QueryAsync(step, k, threshold);
             // if no result is found, return it
@@ -93,25 +90,24 @@ I don't know how to fix this error as MLNet reference is not helpful.
 
             // else, use llm to summarize the result
             var agent = new ChatAgent(
-                Constant.GPT,
-                Constant.GPT_4_MODEL_ID,
+                _openAIClient,
+                _model,
                 "admin",
                 @$"You create several mlnet example from reference to resolve given step. Put your answer between ```csharp and ```
 Say you don't have example if provided reference is not helpful. Please think step by step.
 
-# Reference
+- MLNet Reference -
+```csharp
 {result}
-# End
+```
 
-#Step#
+- step -
 {step}
-#EndStep#
 
 Example response:
+Here are some examples that might be helpful to resolve the step.
 ```csharp
-// example1
-// example2
-// example3
+xxx
 ```
 ---
 I don't have example for this step.
@@ -128,9 +124,9 @@ I don't have example for this step.
         }
 
 
-        private async Task<string> QueryAsync(string query, int k = 5, float threshold = 0.7f)
+        private async Task<string> QueryAsync(string query, int k = 5, float threshold = 0.8f)
         {
-            var baseUri = "https://littlelittlecloud-mlnet-samples.hf.space/--replicas/kkvq6/api/search";
+            var baseUri = "https://littlelittlecloud-mlnet-samples.hf.space/--replicas/9gsgd/api/search";
             var documentID = "mlnet_notebook_examples_v1.json";
             var data = new
             {
@@ -144,8 +140,7 @@ I don't have example for this step.
             };
 
             var content = JsonSerializer.Serialize(data);
-            var bearToken = Constant.MLNET101SEARCHTOEKN;
-            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearToken);
+            //_httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearToken);
 
             var response = await _httpClient.PostAsync(baseUri, new StringContent(content, Encoding.UTF8, "application/json"));
 
@@ -182,9 +177,8 @@ I don't have example for this step.
                 var sb = new StringBuilder();
                 foreach (var record in records)
                 {
-                    sb.AppendLine($"## ML.Net example ##");
                     sb.AppendLine(record.Content.ToString());
-                    sb.AppendLine($"## End of ML.Net example ##");
+                    sb.AppendLine("");
                 }
 
                 return sb.ToString();
@@ -208,4 +202,5 @@ I don't have example for this step.
             public string[] Data { get; set; } = Array.Empty<string>();
         }
     }
+
 }

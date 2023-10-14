@@ -26,7 +26,7 @@ namespace GroupChatExample.CodingTask
             this._workingFolder = System.IO.Path.GetDirectoryName(notebookPath) ?? string.Empty;
             this._interactiveService = new InteractiveService(_workingFolder);
             this._interactiveService.StartAsync(this._workingFolder, default).Wait();
-            this.dotnetInteractiveFunction = new DotnetInteractiveFunction(this._interactiveService, this._logger);
+            this.dotnetInteractiveFunction = new DotnetInteractiveFunction(this._interactiveService, logger: this._logger);
         }
         /// <summary>
         /// Create an empty notebook.

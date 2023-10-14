@@ -16,19 +16,22 @@ namespace GroupChatExample.Helper
         private readonly string _roleInformation;
         private OpenAIClient _client;
         private readonly Dictionary<FunctionDefinition, Func<string, Task<string>>> _functionMaps;
+        private readonly float _temperature = 0f;
 
         public ChatAgent(
             OpenAIClient client,
             string model,
             string name,
             string roleInformation,
-            Dictionary<FunctionDefinition, Func<string, Task<string>>>? functionMaps = null)
+            Dictionary<FunctionDefinition, Func<string, Task<string>>>? functionMaps = null,
+            float temperature = 0f)
         {
             this._model = model;
             this._client = client;
             _name = name;
             _roleInformation = roleInformation;
             _functionMaps = functionMaps ?? new Dictionary<FunctionDefinition, Func<string, Task<string>>>();
+            _temperature = temperature;
         }
 
 
@@ -63,29 +66,31 @@ namespace GroupChatExample.Helper
                     try
                     {
                         var functionResult = await func(parameters);
-                        var functionResultMessage = new ChatMessage(ChatRole.Function, functionResult);
-                        functionResultMessage.Name = function.Name;
+                        chatMessage.Content = functionResult;
+                        chatMessage.Name = function.Name;
 
-                        return functionResultMessage;
                     }
                     catch (Exception e)
                     {
-                        var msg = new ChatMessage(ChatRole.Function, $"Error: {e.Message}");
-                        msg.Name = function.Name;
-
-                        return msg;
+                        var errorMessage = $"Error: {e.Message}";
+                        chatMessage.Content = errorMessage;
+                        chatMessage.Name = function.Name;
                     }
                 }
                 else
                 {
                     var availableFunctions = _functionMaps?.Select(kv => kv.Key.Name)?.ToList() ?? new List<string>();
-                    var unknownFunctionMessage = new ChatMessage(ChatRole.User, $"Unknown function: {function.Name}. Available functions: {string.Join(",", availableFunctions)}");
-
-                    return unknownFunctionMessage;
+                    var unknownFunctionMessage = $"Unknown function: {function.Name}. Available functions: {string.Join(",", availableFunctions)}";
+                    chatMessage.Content = unknownFunctionMessage;
+                    chatMessage.FunctionCall = null;
                 }
-            }
 
-            return chatMessage;
+                return chatMessage;
+            }
+            else
+            {
+                return chatMessage;
+            }
         }
 
         public async Task<ChatMessage> StepCallAsync(IEnumerable<ChatMessage> conversation, CancellationToken ct = default)
@@ -95,12 +100,13 @@ namespace GroupChatExample.Helper
 
             var option = new ChatCompletionsOptions()
             {
-                Temperature = 0.7f,
+                Temperature = _temperature,
                 MaxTokens = 1024,
                 Functions = _functionMaps?.Select(kv => kv.Key)?.ToList() ?? new List<FunctionDefinition>(),
             };
 
-            option.StopSequences.Add("<eof_name>:");
+            //option.StopSequences.Add("<eof_name>");
+            option.StopSequences.Add("<eof_msg>");
 
             foreach (var message in messages)
             {
@@ -109,14 +115,14 @@ namespace GroupChatExample.Helper
 
             var result = await _client.GetChatCompletionsWithRetryAsync(this._model, option, ct);
 
-            if (result.Value.Choices.Last().FinishReason == CompletionsFinishReason.Stopped)
-            {
-                var message = result.Value.Choices.Last().Message;
-                if (message.Content.StartsWith("From") && message.Content.Split(' ').Length == 2)
-                {
-                    message.Content += "<eof_name>:";
-                }
-            }
+            //if (result.Value.Choices.Last().FinishReason == CompletionsFinishReason.Stopped)
+            //{
+            //    var message = result.Value.Choices.Last().Message;
+            //    if (message.Content.StartsWith("From") && message.Content.Split(' ').Length == 2)
+            //    {
+            //        message.Content += "<eof_name>:";
+            //    }
+            //}
 
             return result.Value.Choices.Last().Message;
         }
