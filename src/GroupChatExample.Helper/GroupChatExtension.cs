@@ -10,12 +10,12 @@ namespace GroupChatExample.Helper
     {
         public static bool IsGroupChatTerminateMessage(this ChatMessage message)
         {
-            return message.Content.StartsWith(GroupChat.TERMINATE);
+            return message.Content.Contains(GroupChat.TERMINATE);
         }
 
         public static bool IsGroupChatClearMessage(this ChatMessage message)
         {
-            return message.Content.StartsWith(GroupChat.CLEAR_MESSAGES);
+            return message.Content.Contains(GroupChat.CLEAR_MESSAGES);
         }
 
         public static IEnumerable<(ChatMessage, string)> MessageToKeep(
@@ -23,24 +23,27 @@ namespace GroupChatExample.Helper
             IEnumerable<(ChatMessage, string)> messages)
         {
             var lastCLRMessageIndex = messages.ToList()
-                    .FindLastIndex(x => x.Item1.IsGroupChatTerminateMessage());
+                    .FindLastIndex(x => x.Item1.IsGroupChatClearMessage());
 
             // if multiple clr messages, e.g [msg, clr, msg, clr, msg, clr, msg]
             // only keep the the messages after the second last clr message.
-            if (messages.Count(m => m.Item1.IsGroupChatTerminateMessage()) > 1)
+            if (messages.Count(m => m.Item1.IsGroupChatClearMessage()) > 1)
             {
                 lastCLRMessageIndex = messages.ToList()
-                    .FindLastIndex(0, lastCLRMessageIndex - 1, x => x.Item1.IsGroupChatTerminateMessage());
+                    .FindLastIndex(lastCLRMessageIndex - 1, lastCLRMessageIndex - 1, x => x.Item1.IsGroupChatClearMessage());
                 messages = messages.Skip(lastCLRMessageIndex);
             }
 
             lastCLRMessageIndex = messages.ToList()
                 .FindLastIndex(x => x.Item1.IsGroupChatClearMessage());
 
-            if (lastCLRMessageIndex != -1 && messages.Count() - lastCLRMessageIndex >= 5)
+            if (lastCLRMessageIndex != -1 && messages.Count() - lastCLRMessageIndex >= 2)
             {
                 messages = messages.Skip(lastCLRMessageIndex);
             }
+
+            Console.WriteLine($"message length {messages.Count()}");
+
 
             return messages;
         }
@@ -62,9 +65,9 @@ namespace GroupChatExample.Helper
                     // add as user message
                     var content = message.Item1.Content;
                     // add From name: prefix and suffix
-                    content = @$"From {message.Item2}<eof_name>:
-{content}
+                    content = @$"{content}
 <eof_msg>
+From {message.Item2}
 round # {i}";
                     var msg = new ChatMessage(ChatRole.User, content);
                     messagesForAgent.Add(msg);
@@ -114,10 +117,12 @@ round # {i}";
             messages = groupChat.MessageToKeep(messages);
             var messagesToKeep = initialMessages.Concat(messages);
 
-            return messagesToKeep.Select(x =>
+            return messagesToKeep.Select((x, i) =>
             {
                 var msg = @$"From {x.Item2}:
-{x.Item1.Content}";
+{x.Item1.Content}
+<eof_msg>
+round # {i}";
                 return new ChatMessage(ChatRole.User, msg);
             });
         }

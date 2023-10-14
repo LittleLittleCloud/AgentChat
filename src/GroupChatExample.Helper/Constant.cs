@@ -10,7 +10,7 @@ namespace GroupChatExample.Helper
     public static class Constant
     {
         public static string MLNET101SEARCHTOEKN { get; set; } = Environment.GetEnvironmentVariable("MLNET101SEARCHTOEKN");
-        public static string AZURE_GPT_35_MODEL_ID { get; set; } = "JulyChat";
+        public static string AZURE_GPT_35_MODEL_ID { get; set; } = "gpt-35-turbo-16k";
 
         public static string AZURE_GPT_4_MODEL_ID { get; set; } = "gpt-4";
 

@@ -3,7 +3,6 @@ using Azure.AI.OpenAI;
 using GroupChatExample.CoderRunnerExamplar;
 using GroupChatExample.DotnetInteractiveService;
 using GroupChatExample.Helper;
-using System.Reflection;
 using System.Text;
 
 var workDir = Path.Combine(Path.GetTempPath(), "CoderRunnerExamplar");
@@ -14,51 +13,87 @@ if (!Directory.Exists(workDir))
     Directory.CreateDirectory(workDir);
 }
 
+// set up openai client and model id to use.
+var openAIClient = Constant.AzureGPT4;
+var model = Constant.AZURE_GPT_4_MODEL_ID;
+
 using var service = new InteractiveService(workDir);
 using var httpClient = new HttpClient();
 await service.StartAsync(workDir, default);
 var logger = new Logger(workDir);
 var notebookPath = Path.Combine(workDir, "notebook.ipynb");
 using var dotnetInteractiveFunction = new DotnetInteractiveFunction(service, notebookPath, logger: logger, true);
-var OPENAI_API_KEY = Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? throw new InvalidOperationException("OPENAI_API_KEY is not set");
-var model = Constant.AZURE_GPT_35_MODEL_ID;
-var openAIClient = new OpenAIClient(OPENAI_API_KEY);
-openAIClient = Constant.AzureGPT35;
+
 var fixInvalidJsonFunction = new FixInvalidJsonFunctionWrapper(openAIClient, model);
 var exampleFunction = new MLNetExamplarFunction(httpClient, openAIClient, model);
 var coder = new ChatAgent(
-        Constant.AzureGPT4,
-        Constant.AZURE_GPT_4_MODEL_ID,
+        openAIClient,
+        model,
         "Coder",
-        @"You write dotnet script to resolve tasks.
-You implement given step based on previous context. You don't need to provide complete code, just add the code based on previous context.
+        @"You act as dotnet coder, you write dotnet script to resolve tasks.
+Here's the workflow you follow:
+-workflow-
+if no_current_step
+    ask_for_current_step
+else if no_example_code
+    ask_examplar_to_provide_mlnet_example
+else
+    write_code_to_resolve_current_step
+wait_for_code_to_be_run
+if code_has_error
+    fix_code_error and wait_for_code_to_be_run
+-end-
 
-e.g.
-```nuget
-// install xx packages
-```
-
-```csharp
-...
-```
-end
-
-Here're some rules to follow when you write dotnet code:
-- Remove Main function and use Top-level statement.
-- Don't use `using` statement. Runner can't handle it.
+Here're some rules to follow on write_code_to_resolve_current_step:
+- put code between ```csharp and ```
+- Use top-level statements, remove main function, just write code, like what python does.
+- Remove all `using` statement.
 - Try to use `var` instead of explicit type.
 - Try avoid using external library.
 - Don't use external data source, like file, database, etc. Create a dummy dataset if you need.
 - Always print out the result to console. Don't write code that doesn't print out anything.
-");
+
+Here are some examples for ask_for_current_step:
+- No current step is provided. Please provide current step.
+
+Here are some examples for write_code_to_resolve_current_step:
+```nuget
+xxx
+```
+```csharp
+xxx
+```
+
+Here are some examples for fix_code_error:
+The error is caused by xxx. Here's the fix code
+```csharp
+xxx
+```
+
+Here are some examples for wait_for_code_to_be_run:
+- Runner, please run the code.
+",
+        temperature: 0.5f);
 
 
 var runner = new ChatAgent(
         openAIClient,
         model,
         "Runner",
-        @"You use dotnet interactive to run existing csharp code from the most recent message. You have access to file system and network.
-You can only reply with RunCodeFunction or InstallNugetPackagesFunction or 'No code to run' or 'Goodbye'.
+        @"You act as dotnet runner, you run dotnet script and install nuget packages. Here's the workflow you follow:
+-workflow-
+if code_is_available_from_latest_message
+    if nuget_packages_is_available_from_latest_message, call install_nuget_packages
+    call run_code
+else
+    ask_for_code_to_run
+-end-
+
+Here are some examples for ask_for_code_to_run:
+- No code is provided. Please provide code to run.
+
+Here are some examples for install_nuget_packages:
+- install_nuget_packages // nuget packages to install
 ",
         new Dictionary<FunctionDefinition, Func<string, Task<string>>>
         {
@@ -70,15 +105,18 @@ var examplar = new ChatAgent(
     openAIClient,
     model,
     "Examplar",
-    @"You are mlnet Examplar. You provide mlnet api examples and fix mlnet error.
-You can only reply with SearchMLNetApiExampleFunction or FixMLNetErrorFunction or 'I don't know'.
+    @"You act as mlnet expert that provide mlnet example and fix mlnet error. Here's the workflow you follow:
+-workflow-
+if step_is_given and no_example_code
+    call search_mlnet_api_example
+else if mlnet_error_is_given
+    call fix_mlnet_error
+else
+    no_op
+-end-
 
-Here're some examples
-- Example 1 -
-SearchMLNetApiExample( //arguments)
-
-- Example 2 -
-I don't know, question is not related to mlnet.
+Here are some examples for no_op:
+- example code is provided, and no error is given. No op.
 ",
     new Dictionary<FunctionDefinition, Func<string, Task<string>>>
     {
@@ -90,21 +128,28 @@ var admin = new ChatAgent(
     openAIClient,
     model,
     "Admin",
-    @"You lead the group to resolve task.
-First load previous context and continue from there. Otherwise, start from the first step.
-To resolve each step, you ask Examplar to provide examples. then ask Coder to implement the step, then ask Runner to run the code.
-If the code is not valid, ask Coder to fix the code.
-If the error is related to mlnet, ask Examplar to fix MLNet error.
-You save context every 10 rounds. Or when a step is resolved.
-If Coder fails to write correct code for over 3 times, try the current step again by loading previous context.
+    @"You act as group admin that lead other agents to resolve task together. Here's the workflow you follow:
+-workflow-
+if current_step is resolved
+    save_context
+    provide_next_step
 
-Here're some response examples.
-- Examplar, provide mlnet example for xxx
-- Coder, implement download file step
-- Runner, run code from Coder.
-- Examplar, fix the mlnet error.
-- Current step is resolved, save context.
-- Three strikes, load previous context and try again.
+if all_steps_are_resolved
+    terminate_chat
+-end-
+
+The task is Train a lightGBM binary classification model using mlnet.
+
+The steps are:
+- install necessary nuget packages (Microsoft.ML and Microsoft.ML.LightGBM) and include namespaces.
+- create a DummyData class with four numeric features and one bool label.
+- generate 1000 rows of DummyData, and split the data into train and test set.
+- Create a LightGBM binary classification pipeline. The pipeline should first concatenate all features into a single column, followed by a LightGbm binary classification trainer.
+- train the model from pipeline and train set and evaluate the model with test data.
+- save the model to lgbm.mlnet
+
+Here are some examples for provide_next_step:
+- The next step to resolve is xxx. Please resolve it.
 ");
 
 var groupChat = new GroupChat(
@@ -119,35 +164,51 @@ var groupChat = new GroupChat(
     });
 
 var contextPath = Path.Combine(workDir, "context.txt");
-var summarizeFunction = new ContextManagementFunction(contextPath);
-admin.FunctionMaps.Add(summarizeFunction.LoadContextFunction, summarizeFunction.LoadContextWrapper);
+var contextManagementFunction = new ContextManagementFunction(contextPath);
 admin.FunctionMaps.Add(groupChat.TerminateGroupChatFunction, groupChat.TerminateGroupChatWrapper);
-admin.FunctionMaps.Add(summarizeFunction.SaveContextFunction, async (args) =>
+admin.FunctionMaps.Add(contextManagementFunction.SaveContextFunction, async (args) =>
 {
-    var summarizeConversationWrapper = fixInvalidJsonFunction.FixInvalidJsonWrapper(summarizeFunction.SaveContextWrapper);
+    var summarizeConversationWrapper = fixInvalidJsonFunction.FixInvalidJsonWrapper(contextManagementFunction.SaveContextWrapper);
     var context = await summarizeConversationWrapper(args);
 
-    context = await groupChat.SummarizeConversation(context);
+    context = await groupChat.ClearGroupChat(context);
 
     return context;
 });
+admin.FunctionMaps.Add(contextManagementFunction.LoadContextFunction, async (args) =>
+{
+    var loadContextWrapper = fixInvalidJsonFunction.FixInvalidJsonWrapper(contextManagementFunction.LoadContextWrapper);
+    var context = await loadContextWrapper(args);
+    context = await groupChat.ClearGroupChat(context);
+    return context;
+});
 
-groupChat.AddInitializeMessage("Welcome to the group chat! Work together to resolve my task.", admin.Name);
-groupChat.AddInitializeMessage("Hey", coder.Name);
-groupChat.AddInitializeMessage("Hey", runner.Name);
-groupChat.AddInitializeMessage("Hey", examplar.Name);
-groupChat.AddInitializeMessage("For each step, I'll first ask Examplar to provide mlnet example", admin.Name);
-groupChat.AddInitializeMessage("Then I'll ask Coder to write code", admin.Name);
-groupChat.AddInitializeMessage("Then I'll ask Runner to run the code", admin.Name);
-groupChat.AddInitializeMessage("Once a step is completed, I'll save the context", admin.Name);
-groupChat.AddInitializeMessage(@$"The task is: Train a lightGBM binary classification model using mlnet.
-- first, install necessary nuget packages and include namespaces.
-- then create a dummy dataset with at least 100 rows and four features.
-- then create a binary classification pipeline using lightGBM.
-- Then train the pipeline using dummy data and print accuracy
-- finally, save the model to lgbm.mlnet", admin.Name);
 
-var conversation = await admin.SendMessageAsync("Let me load previous context first", groupChat, 100);
+groupChat.AddInitializeMessage("Welcome to the group chat! I'm Admin. Work together to resolve my task.", admin.Name);
+groupChat.AddInitializeMessage("Hey I'm Coder", coder.Name);
+groupChat.AddInitializeMessage("Hey I'm Runner", runner.Name);
+groupChat.AddInitializeMessage("Hey I'm Examplar", examplar.Name);
+groupChat.AddInitializeMessage(@$"Here's the workflow for this group chat
+-group_chat_workflow-
+admin_load_previous_context and provide_next_step
+admin_save_context_for_every_10_new_messages
+if all_steps_are_resolved
+    terminate_chat
+else
+    admin_provide_next_step
+    examplar_provide_mlnet_example
+    coder_write_code_to_resolve_step
+    runner_run_code
+
+if no_error_from_runner
+    admin_save_context
+    admin_provide_next_step
+else
+    examplar_fix_mlnet_error or coder_fix_code_error
+-end-
+", admin.Name);
+
+var conversation = await groupChat.CallAsync(null, maxRound: 200, true);
 
 // log conversation to chat_history.txt
 if (conversation is not null)

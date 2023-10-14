@@ -22,10 +22,12 @@ namespace GroupChatExample.CoderRunnerExamplar
         /// <param name="task">The global task to complete.</param>
         /// <param name="completedSteps">Completed steps.</param>
         /// <param name="currentStep">The current step.</param>
-        /// <param name="existingCodeForEachStep">existing code solution for each step.</param>
+        /// <param name="existingClass">Existing class definition from previous context.</param>
+        /// <param name="existingFunctions">Existing function definitions from previous context.</param>
+        /// <param name="existingVariables">Existing variables with type from previous context.</param>
         /// <param name="context">current context.</param>
         [FunctionAttribution]
-        public async Task<string> SaveContext(string task, string[] completedSteps, string currentStep, string[] existingCodeForEachStep, string context)
+        public async Task<string> SaveContext(string task, string[] completedSteps, string currentStep, string[] existingFunctions, string[] existingVariables, string[] existingClass, string context)
         {
             var result = $@"
 -Task-
@@ -37,12 +39,20 @@ namespace GroupChatExample.CoderRunnerExamplar
 -Current Step-
 {currentStep}
 
--Existing Code-
-{string.Join("\r\n", existingCodeForEachStep.Select(x => $@"
+-Existing Functions-
 ```csharp
-{x}
+{string.Join("\r\n", existingFunctions)}
 ```
-"))}
+
+-Existing Variables-
+```csharp
+{string.Join("\r\n", existingVariables)}
+```
+
+-Existing Class-
+```csharp
+{string.Join("\r\n", existingClass)}
+```
 
 {context}
 ";

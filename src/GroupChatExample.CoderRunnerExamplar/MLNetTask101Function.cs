@@ -124,15 +124,16 @@ I don't have example for this step.
         }
 
 
-        private async Task<string> QueryAsync(string query, int k = 5, float threshold = 0.7f)
+        private async Task<string> QueryAsync(string query, int k = 5, float threshold = 0.8f)
         {
-            var baseUri = "https://littlelittlecloud-mlnet-samples.hf.space/--replicas/2bbq8/api/search";
+            var baseUri = "https://littlelittlecloud-mlnet-samples.hf.space/--replicas/9gsgd/api/search";
+            var documentID = "mlnet_notebook_examples_v1.json";
             var data = new
             {
                 data = new object[]
                 {
                     query,
-                    null,
+                    documentID,
                     k,
                     threshold,
                 },

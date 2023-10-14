@@ -1,2 +1,3 @@
-Latest PR: #6855 - Update DataViewRowCursor.md
-URL: https://github.com/dotnet/machinelearning/pull/6855
+URL: https://api.github.com/repos/dotnet/machinelearning/pulls/6855
+ID: 1546284185
+Node ID: PR_kwDOB957rs5cKmyZ

@@ -9,7 +9,7 @@ namespace GroupChatExample.Helper
 {
     public static class AgentExtension
     {
-        public static async Task<IEnumerable<(ChatMessage, string)>?> SendMessageAsync(
+        public static async Task<IEnumerable<(ChatMessage, string)>> SendMessageAsync(
             this IAgent agent,
             string message,
             GroupChat groupChat,

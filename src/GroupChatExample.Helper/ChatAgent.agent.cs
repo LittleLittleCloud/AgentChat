@@ -16,19 +16,22 @@ namespace GroupChatExample.Helper
         private readonly string _roleInformation;
         private OpenAIClient _client;
         private readonly Dictionary<FunctionDefinition, Func<string, Task<string>>> _functionMaps;
+        private readonly float _temperature = 0f;
 
         public ChatAgent(
             OpenAIClient client,
             string model,
             string name,
             string roleInformation,
-            Dictionary<FunctionDefinition, Func<string, Task<string>>>? functionMaps = null)
+            Dictionary<FunctionDefinition, Func<string, Task<string>>>? functionMaps = null,
+            float temperature = 0f)
         {
             this._model = model;
             this._client = client;
             _name = name;
             _roleInformation = roleInformation;
             _functionMaps = functionMaps ?? new Dictionary<FunctionDefinition, Func<string, Task<string>>>();
+            _temperature = temperature;
         }
 
 
@@ -97,12 +100,12 @@ namespace GroupChatExample.Helper
 
             var option = new ChatCompletionsOptions()
             {
-                Temperature = 0.9f,
+                Temperature = _temperature,
                 MaxTokens = 1024,
                 Functions = _functionMaps?.Select(kv => kv.Key)?.ToList() ?? new List<FunctionDefinition>(),
             };
 
-            option.StopSequences.Add("<eof_name>");
+            //option.StopSequences.Add("<eof_name>");
             option.StopSequences.Add("<eof_msg>");
 
             foreach (var message in messages)
@@ -112,14 +115,14 @@ namespace GroupChatExample.Helper
 
             var result = await _client.GetChatCompletionsWithRetryAsync(this._model, option, ct);
 
-            if (result.Value.Choices.Last().FinishReason == CompletionsFinishReason.Stopped)
-            {
-                var message = result.Value.Choices.Last().Message;
-                if (message.Content.StartsWith("From") && message.Content.Split(' ').Length == 2)
-                {
-                    message.Content += "<eof_name>:";
-                }
-            }
+            //if (result.Value.Choices.Last().FinishReason == CompletionsFinishReason.Stopped)
+            //{
+            //    var message = result.Value.Choices.Last().Message;
+            //    if (message.Content.StartsWith("From") && message.Content.Split(' ').Length == 2)
+            //    {
+            //        message.Content += "<eof_name>:";
+            //    }
+            //}
 
             return result.Value.Choices.Last().Message;
         }

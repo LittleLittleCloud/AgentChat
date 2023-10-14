@@ -37,12 +37,11 @@ namespace GroupChatExample.Helper
         /// </summary>
         /// <param name="context">conversation context.</param>
         [FunctionAttribution]
-        public async Task<string> SummarizeConversation(string context)
+        public async Task<string> ClearGroupChat(string context)
         {
-            return @$"{CLEAR_MESSAGES}
--CONTEXT-
-{context}
--END OF CONTEXT-
+            return @$"{context}
+<eof_msg>
+{CLEAR_MESSAGES}
 ";
         }
 
@@ -62,9 +61,13 @@ namespace GroupChatExample.Helper
 
         public async Task<IAgent?> SelectNextSpeakerAsync(IEnumerable<(ChatMessage, string)> conversationWithName)
         {
+            var agent_names = this.agents.Select(x => x.Name).ToList();
             var systemMessage = new ChatMessage(
                 ChatRole.System,
-                @"You are in a role play game. Carefully read the conversation history and carry on the conversation.
+                $@"You are in a role play game. Carefully read the conversation history and carry on the conversation.
+The available roles are:
+{string.Join(",", agent_names)}
+
 Each message will start with 'From name:', e.g:
 From admin:
 //your message//."
@@ -113,7 +116,7 @@ From admin:
             this.initializeMessages = this.initializeMessages.Append((chatMessage, name));
         }
 
-        public async Task<IEnumerable<(ChatMessage, string)>?> CallAsync(IEnumerable<(ChatMessage, string)>? conversationWithName = null, int maxRound = 10, bool throwExceptionWhenMaxRoundReached = true)
+        public async Task<IEnumerable<(ChatMessage, string)>> CallAsync(IEnumerable<(ChatMessage, string)>? conversationWithName = null, int maxRound = 10, bool throwExceptionWhenMaxRoundReached = true)
         {
             if (maxRound == 0)
             {
@@ -123,7 +126,7 @@ From admin:
                 }
                 else
                 {
-                    return conversationWithName;
+                    return conversationWithName ?? Enumerable.Empty<(ChatMessage, string)>();
                 }
             }
 
@@ -141,29 +144,29 @@ From admin:
             var processedConversation = this.ProcessConversationForAgent(agent.Name, this.initializeMessages, conversationWithName);
             result = await agent.CallAsync(processedConversation) ?? throw new Exception("No result is returned.");
             
-            // check if result is end with <eof_name>:
-            if (result.Content.EndsWith("<eof_name>:"))
-            {
-                // content is From name<eof_name>:
-                // retrieve name
-                // sleep 10 seconds
-                await Task.Delay(1000);
-                var name = result.Content.Substring(5, result.Content.Length - 16);
+            //// check if result is end with <eof_name>:
+            //if (result.Content.EndsWith("<eof_name>:"))
+            //{
+            //    // content is From name<eof_name>:
+            //    // retrieve name
+            //    // sleep 10 seconds
+            //    await Task.Delay(1000);
+            //    var name = result.Content.Substring(5, result.Content.Length - 16);
                 
-                // check if name is valid
-                if (!this.agents.Any(x => x.Name.ToLower() == name.ToLower()) || agent.Name == name)
-                {
-                    Console.WriteLine($"Invalid name: {name}");
-                    return await this.CallAsync(conversationWithName, maxRound - 1, throwExceptionWhenMaxRoundReached);
-                }
+            //    // check if name is valid
+            //    if (!this.agents.Any(x => x.Name.ToLower() == name.ToLower()) || agent.Name == name)
+            //    {
+            //        Console.WriteLine($"Invalid name: {name}");
+            //        return await this.CallAsync(conversationWithName, maxRound - 1, throwExceptionWhenMaxRoundReached);
+            //    }
 
-                // ask agent to speak
-                // step 1: randomly pick a message from candidates
-                var random = new Random();
-                var index = random.Next(0, this.pleaseSpeakMessageCandidates.Count());
-                var message = this.pleaseSpeakMessageCandidates.ElementAt(index);
-                result = new ChatMessage(ChatRole.Assistant, $"{name}, {message}");
-            }
+            //    // ask agent to speak
+            //    // step 1: randomly pick a message from candidates
+            //    var random = new Random();
+            //    var index = random.Next(0, this.pleaseSpeakMessageCandidates.Count());
+            //    var message = this.pleaseSpeakMessageCandidates.ElementAt(index);
+            //    result = new ChatMessage(ChatRole.Assistant, $"{name}, {message}");
+            //}
 
             this.PrettyPrintMessage(result, agent.Name);
             var updatedConversation = conversationWithName.Append((result, agent.Name));
