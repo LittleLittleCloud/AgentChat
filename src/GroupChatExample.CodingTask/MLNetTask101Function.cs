@@ -40,7 +40,7 @@ namespace GroupChatExample.CodingTask
 
             // else, use llm to summarize the result
             var agent = new ChatAgent(
-                Constant.AzureGPT4,
+                Constant.GPT,
                 Constant.GPT_4_MODEL_ID,
                 "admin",
                 @$"Fix the error of given code and explain how you fix it. Put your answer between ```csharp and ```
@@ -93,7 +93,7 @@ I don't know how to fix this error as MLNet reference is not helpful.
 
             // else, use llm to summarize the result
             var agent = new ChatAgent(
-                Constant.AzureGPT4,
+                Constant.GPT,
                 Constant.GPT_4_MODEL_ID,
                 "admin",
                 @$"You create several mlnet example from reference to resolve given step. Put your answer between ```csharp and ```

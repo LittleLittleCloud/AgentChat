@@ -205,7 +205,7 @@ Then you create label.json for csharp code and save the label.json to {workDir}"
             });
 
         var architect = new ChatAgent(
-            Constant.AzureGPT4,
+            Constant.GPT,
             Constant.GPT_4_MODEL_ID,
             "architect",
             @$"You are architect. you briefly explain what to do in each step.
@@ -288,7 +288,7 @@ if engineer provdes a nuget installation script, add it as nuget installation ce
             });
 
         var admin = new ChatAgent(
-           Constant.AzureGPT4,
+           Constant.GPT,
            Constant.GPT_4_MODEL_ID,
            "admin",
            @"You are admin. 

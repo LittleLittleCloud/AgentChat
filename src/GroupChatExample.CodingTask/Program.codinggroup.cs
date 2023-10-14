@@ -47,7 +47,7 @@ engineer, implement step 1.
 Once engineer complete one step, provide them with the next step.");
         var engineerFunction = new EngineerFunction(dotnetInteractiveFunction, mltask101Function, logger);
         using var engineer = new ChatAgent(
-            Constant.AzureGPT4,
+            Constant.GPT,
             Constant.GPT_4_MODEL_ID,
             name: "Engineer",
             roleInformation: @"You are a function caller. You always call CompleteArchitechStep to complete a step.
