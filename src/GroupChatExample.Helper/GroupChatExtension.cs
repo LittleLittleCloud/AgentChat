@@ -64,7 +64,6 @@ namespace GroupChatExample.Helper
                 {
                     // add as user message
                     var content = message.Item1.Content;
-                    // add From name: prefix and suffix
                     content = @$"{content}
 <eof_msg>
 From {message.Item2}

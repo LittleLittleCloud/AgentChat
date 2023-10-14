@@ -143,31 +143,6 @@ From admin:
             ChatMessage? result = null;
             var processedConversation = this.ProcessConversationForAgent(agent.Name, this.initializeMessages, conversationWithName);
             result = await agent.CallAsync(processedConversation) ?? throw new Exception("No result is returned.");
-            
-            //// check if result is end with <eof_name>:
-            //if (result.Content.EndsWith("<eof_name>:"))
-            //{
-            //    // content is From name<eof_name>:
-            //    // retrieve name
-            //    // sleep 10 seconds
-            //    await Task.Delay(1000);
-            //    var name = result.Content.Substring(5, result.Content.Length - 16);
-                
-            //    // check if name is valid
-            //    if (!this.agents.Any(x => x.Name.ToLower() == name.ToLower()) || agent.Name == name)
-            //    {
-            //        Console.WriteLine($"Invalid name: {name}");
-            //        return await this.CallAsync(conversationWithName, maxRound - 1, throwExceptionWhenMaxRoundReached);
-            //    }
-
-            //    // ask agent to speak
-            //    // step 1: randomly pick a message from candidates
-            //    var random = new Random();
-            //    var index = random.Next(0, this.pleaseSpeakMessageCandidates.Count());
-            //    var message = this.pleaseSpeakMessageCandidates.ElementAt(index);
-            //    result = new ChatMessage(ChatRole.Assistant, $"{name}, {message}");
-            //}
-
             this.PrettyPrintMessage(result, agent.Name);
             var updatedConversation = conversationWithName.Append((result, agent.Name));
 

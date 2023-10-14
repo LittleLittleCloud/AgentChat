@@ -24,7 +24,7 @@ internal static partial class Program
         using var interactiveService = new InteractiveService(workingDir);
         await interactiveService.StartAsync(workingDir, CancellationToken.None);
 
-        using var dotnetInteractiveFunction = new DotnetInteractiveFunction(interactiveService, logger);
+        using var dotnetInteractiveFunction = new DotnetInteractiveFunction(interactiveService, logger: logger);
         var mltask101Function = new MLNetExample101Function(new HttpClient());
 
         var architect = new ChatAgent(
