@@ -35,7 +35,7 @@ namespace GroupChatExample.CoderRunnerExamplar
             }
 
             // else, use llm to summarize the result
-            var agent = new ChatAgent(
+            var agent = new GPTAgent(
                 _openAIClient,
                 _model,
                 "admin",
@@ -89,7 +89,7 @@ I don't know how to fix this error as MLNet reference is not helpful.
             }
 
             // else, use llm to summarize the result
-            var agent = new ChatAgent(
+            var agent = new GPTAgent(
                 _openAIClient,
                 _model,
                 "admin",

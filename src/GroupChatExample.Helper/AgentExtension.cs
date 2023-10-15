@@ -20,5 +20,14 @@ namespace GroupChatExample.Helper
             var msg = new ChatMessage(ChatRole.User, message);
             return await groupChat.CallAsync(new[] {(msg, agent.Name)}, maxRound, throwWhenMaxRoundReached);
         }
+
+        public static async Task<ChatMessage> SendMessageAsync(
+            this IAgent agent,
+            string message,
+            CancellationToken ct = default)
+        {
+            var msg = new ChatMessage(ChatRole.User, message);
+            return await agent.CallAsync(new[] {msg}, ct);
+        }
     }
 }

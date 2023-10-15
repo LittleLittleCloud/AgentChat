@@ -26,7 +26,7 @@ using var dotnetInteractiveFunction = new DotnetInteractiveFunction(service, not
 
 var fixInvalidJsonFunction = new FixInvalidJsonFunctionWrapper(openAIClient, model);
 var exampleFunction = new MLNetExamplarFunction(httpClient, openAIClient, model);
-var coder = new ChatAgent(
+var coder = new GPTAgent(
         openAIClient,
         model,
         "Coder",
@@ -76,7 +76,7 @@ Here are some examples for wait_for_code_to_be_run:
         temperature: 0.5f);
 
 
-var runner = new ChatAgent(
+var runner = new GPTAgent(
         openAIClient,
         model,
         "Runner",
@@ -101,7 +101,7 @@ Here are some examples for install_nuget_packages:
             { dotnetInteractiveFunction.InstallNugetPackagesFunction, dotnetInteractiveFunction.InstallNugetPackagesWrapper },
         });
 
-var examplar = new ChatAgent(
+var examplar = new GPTAgent(
     openAIClient,
     model,
     "Examplar",
@@ -124,7 +124,7 @@ Here are some examples for no_op:
         { exampleFunction.FixMLNetErrorFunction, exampleFunction.FixMLNetErrorWrapper },
     });
 
-var admin = new ChatAgent(
+var admin = new GPTAgent(
     openAIClient,
     model,
     "Admin",

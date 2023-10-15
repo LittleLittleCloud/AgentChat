@@ -39,7 +39,7 @@ namespace GroupChatExample.CodingTask
             }
 
             // else, use llm to summarize the result
-            var agent = new ChatAgent(
+            var agent = new GPTAgent(
                 Constant.GPT,
                 Constant.GPT_4_MODEL_ID,
                 "admin",
@@ -92,7 +92,7 @@ I don't know how to fix this error as MLNet reference is not helpful.
             }
 
             // else, use llm to summarize the result
-            var agent = new ChatAgent(
+            var agent = new GPTAgent(
                 Constant.GPT,
                 Constant.GPT_4_MODEL_ID,
                 "admin",

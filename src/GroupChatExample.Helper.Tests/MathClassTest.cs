@@ -42,7 +42,7 @@ Question #{question_index}:
         [ApiKeyFact]
         public async Task MathChat_End_To_End_Test()
         {
-            var teacher = new ChatAgent(
+            var teacher = new GPTAgent(
                 Constant.GPT,
                 Constant.GPT_35_MODEL_ID,
                 "Teacher",
@@ -61,7 +61,7 @@ else
                     { this.AnswerIsCorrectFunction, this.AnswerIsCorrectWrapper },
                 });
 
-            var student = new ChatAgent(
+            var student = new GPTAgent(
                 Constant.AzureOpenAI,
                 Constant.GPT_35_MODEL_ID,
                 "Student",
@@ -84,7 +84,7 @@ sorry, the answer should be 2, not 3
                 {
                     { this.AnswerQuestionFunction, this.AnswerQuestionWrapper }
                 });
-            var admin = new ChatAgent(
+            var admin = new GPTAgent(
                 Constant.AzureOpenAI,
                 Constant.GPT_35_MODEL_ID,
                 "Admin",
