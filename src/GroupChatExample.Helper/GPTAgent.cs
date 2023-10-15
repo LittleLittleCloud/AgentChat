@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace GroupChatExample.Helper
 {
-    public partial class ChatAgent : IDisposable, IAgent
+    public partial class GPTAgent : IDisposable, IAgent
     {
         private readonly string _model;
         private readonly string _name;
@@ -18,7 +18,7 @@ namespace GroupChatExample.Helper
         private readonly Dictionary<FunctionDefinition, Func<string, Task<string>>> _functionMaps;
         private readonly float _temperature = 0f;
 
-        public ChatAgent(
+        public GPTAgent(
             OpenAIClient client,
             string model,
             string name,

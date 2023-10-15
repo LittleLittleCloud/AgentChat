@@ -26,7 +26,7 @@ var logger = new Logger(workDir);
 using var dotnetInteractiveFunction = new DotnetInteractiveFunction(service, logger: logger);
 var fixInvalidJsonFunction = new FixInvalidJsonFunctionWrapper(openAIClient, model);
 
-var coder = new ChatAgent(
+var coder = new GPTAgent(
         openAIClient,
         model,
         "Coder",
@@ -72,7 +72,7 @@ xxx
 ```
 ");
 
-var runner = new ChatAgent(
+var runner = new GPTAgent(
         openAIClient,
         model,
         "Runner",
@@ -101,7 +101,7 @@ Here are some examples for install_nuget_packages:
             { dotnetInteractiveFunction.InstallNugetPackagesFunction, dotnetInteractiveFunction.InstallNugetPackagesWrapper },
         });
 
-var admin = new ChatAgent(
+var admin = new GPTAgent(
     openAIClient,
     model,
     "Admin",

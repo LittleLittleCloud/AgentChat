@@ -27,7 +27,7 @@ internal static partial class Program
         using var dotnetInteractiveFunction = new DotnetInteractiveFunction(interactiveService, logger: logger);
         var mltask101Function = new MLNetExample101Function(new HttpClient());
 
-        var architect = new ChatAgent(
+        var architect = new GPTAgent(
             Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             "Architect",
@@ -46,7 +46,7 @@ engineer, implement step 1.
 
 Once engineer complete one step, provide them with the next step.");
         var engineerFunction = new EngineerFunction(dotnetInteractiveFunction, mltask101Function, logger);
-        using var engineer = new ChatAgent(
+        using var engineer = new GPTAgent(
             Constant.GPT,
             Constant.GPT_4_MODEL_ID,
             name: "Engineer",
@@ -58,7 +58,7 @@ Once you complete all steps, create and save the end to end solution. Then reply
                 { engineerFunction.CreateAndSaveEndToEndSolutionFunction, engineerFunction.CreateAndSaveEndToEndSolutionWrapper },
             });
 
-        using var examplar = new ChatAgent(
+        using var examplar = new GPTAgent(
             Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             name: "Examplar",
@@ -70,7 +70,7 @@ Either find similar code for Engineer to reference, or find mlnet api example if
                 { mltask101Function.FixErrorFunction, mltask101Function.FixErrorWrapper },
             });
 
-        using var executor = new ChatAgent(
+        using var executor = new GPTAgent(
             Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             name: "Executor",
@@ -83,7 +83,7 @@ If Engineer provide csharp code, running them using RunCode and return result.",
             });
 
         var groupChatFunction = new AdminFunction();
-        using var admin = new ChatAgent(
+        using var admin = new GPTAgent(
             Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             name: "Admin",

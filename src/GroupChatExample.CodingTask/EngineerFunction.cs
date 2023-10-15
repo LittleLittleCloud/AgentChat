@@ -33,7 +33,7 @@ namespace GroupChatExample.CodingTask
         [FunctionAttribution]
         public async Task<string> CompleteArchitectStep(string task, string taskDescirption, string step, string existingSolution)
         {
-            using var engineer = new ChatAgent(
+            using var engineer = new GPTAgent(
             Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             name: "Engineer",
@@ -71,7 +71,7 @@ Examplar, can you provide some example for this step?
 Examplar, can you help me fix the error in the code above?
 ...");
 
-            using var examplar = new ChatAgent(
+            using var examplar = new GPTAgent(
                 Constant.AzureOpenAI,
                 Constant.GPT_35_MODEL_ID,
                 name: "Examplar",
@@ -82,7 +82,7 @@ Examplar, can you help me fix the error in the code above?
                 { mltask101Function.FixErrorFunction, mltask101Function.FixErrorWrapper },
                 });
 
-            using var executor = new ChatAgent(
+            using var executor = new GPTAgent(
                 Constant.AzureOpenAI,
                 Constant.GPT_35_MODEL_ID,
                 name: "Executor",
@@ -95,7 +95,7 @@ If Engineer provide csharp code, running them using RunCode and return result.",
                 });
 
             var terminateGroupFunction = new AdminFunction();
-            using var admin = new ChatAgent(
+            using var admin = new GPTAgent(
                 Constant.AzureOpenAI,
                 Constant.GPT_35_MODEL_ID,
                 name: "Admin",

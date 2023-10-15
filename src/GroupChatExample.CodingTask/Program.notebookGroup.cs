@@ -27,7 +27,7 @@ internal static partial class Program
         var code = await File.ReadAllTextAsync(csharpCode);
 
         // step 2: create group chat
-        var engineer = new ChatAgent(
+        var engineer = new GPTAgent(
             Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             "engineer",
@@ -50,7 +50,7 @@ The following code might be helpful for you to implement each step.
 ```");
 
         using var notebookWriterFunction = new NotebookWriterFunction(notebookPath, logger);
-        var notebookWriter = new ChatAgent(
+        var notebookWriter = new GPTAgent(
             Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             "notebook_writer",
@@ -66,7 +66,7 @@ if engineer provdes a nuget installation script, add it as nuget installation ce
                 { notebookWriterFunction.AddNugetInstallationCellFunction, notebookWriterFunction.AddNugetInstallationCellWrapper },
             });
 
-        var admin = new ChatAgent(
+        var admin = new GPTAgent(
             Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             "admin",
@@ -186,7 +186,7 @@ if engineer provdes a nuget installation script, add it as nuget installation ce
         var createLabelFunction = new CreateLabel(logger);
 
         // create agents
-        var labeller = new ChatAgent(
+        var labeller = new GPTAgent(
             Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             "labeller",
@@ -204,7 +204,7 @@ Then you create label.json for csharp code and save the label.json to {workDir}"
                 { createLabelFunction.SaveTaskFunction, createLabelFunction.SaveTaskWrapper }
             });
 
-        var architect = new ChatAgent(
+        var architect = new GPTAgent(
             Constant.GPT,
             Constant.GPT_4_MODEL_ID,
             "architect",
@@ -247,7 +247,7 @@ For example
 {code}
 ```");
 
-        var engineer = new ChatAgent(
+        var engineer = new GPTAgent(
             Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             "engineer",
@@ -270,7 +270,7 @@ The following code might be helpful for you to implement each step.
 ```");
 
         using var notebookWriterFunction = new NotebookWriterFunction(outputNotebookPath, logger);
-        var notebookWriter = new ChatAgent(
+        var notebookWriter = new GPTAgent(
             Constant.AzureOpenAI,
             Constant.GPT_35_MODEL_ID,
             "notebook_writer",
@@ -287,7 +287,7 @@ if engineer provdes a nuget installation script, add it as nuget installation ce
                 { notebookWriterFunction.AddNugetInstallationCellFunction, notebookWriterFunction.AddNugetInstallationCellWrapper },
             });
 
-        var admin = new ChatAgent(
+        var admin = new GPTAgent(
            Constant.GPT,
            Constant.GPT_4_MODEL_ID,
            "admin",
