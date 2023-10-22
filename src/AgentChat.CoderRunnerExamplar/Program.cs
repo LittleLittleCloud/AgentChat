@@ -207,7 +207,7 @@ if (conversation is not null)
     var sb = new StringBuilder();
     foreach (var message in conversation)
     {
-        var fmtMsg = groupChat.FormatMessage(message);
+        var fmtMsg = message.FormatMessage();
         sb.AppendLine(fmtMsg);
     }
 

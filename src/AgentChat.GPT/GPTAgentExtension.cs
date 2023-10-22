@@ -84,6 +84,26 @@ round # {i++}";
             return await groupChat.CallAsync(new[] { gptMessage }, maxRound, throwWhenMaxRoundReached);
         }
 
+        public static async Task<IEnumerable<IChatMessage>> SendMessageAsync(
+            this GPTAgent agent,
+            IAgent receiver,
+            string msg,
+            IEnumerable<IChatMessage>? chatHistory = null,
+            int maxRound = 10,
+            bool throwWhenMaxRoundReached = false,
+            CancellationToken ct = default)
+        {
+            var chatMessage = new ChatMessage(ChatRole.Assistant, msg);
+            var gptMessage = new GPTChatMessage(chatMessage)
+            {
+                From = agent.Name,
+            };
+
+            chatHistory = chatHistory?.Append(gptMessage) ?? new[] { gptMessage };
+
+            return await agent.SendMessageAsync(receiver, chatHistory, maxRound, throwWhenMaxRoundReached, ct);
+        }
+
         public static async Task<IChatMessage> SendMessageAsync(
             this GPTAgent agent,
             string msg,

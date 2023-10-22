@@ -8,18 +8,8 @@ namespace AgentChat
 {
     public static class GroupChatExtension
     {
-        public static bool IsGroupChatTerminateMessage(this IChatMessage message)
-        {
-            return message.Content.Contains(GroupChat.TERMINATE);
-        }
-
-        public static bool IsGroupChatClearMessage(this IChatMessage message)
-        {
-            return message.Content.Contains(GroupChat.CLEAR_MESSAGES);
-        }
-
         public static IEnumerable<IChatMessage> MessageToKeep(
-            this GroupChat _,
+            this IGroupChat _,
             IEnumerable<IChatMessage> messages)
         {
             var lastCLRMessageIndex = messages.ToList()
@@ -49,7 +39,7 @@ namespace AgentChat
         }
 
         public static IEnumerable<IChatMessage> ProcessConversationForAgent(
-            this GroupChat groupChat,
+            this IGroupChat groupChat,
             IEnumerable<IChatMessage> initialMessages,
             IEnumerable<IChatMessage> messages)
         {
@@ -58,7 +48,7 @@ namespace AgentChat
         }
 
         public static IEnumerable<IChatMessage> ProcessConversationsForRolePlay(
-                this GroupChat groupChat,
+                this IGroupChat groupChat,
                 IChatLLM chatLLM,
                 IEnumerable<IChatMessage> initialMessages,
                 IEnumerable<IChatMessage> messages)

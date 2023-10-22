@@ -1,11 +1,6 @@
 ﻿using AgentChat.Example.Share;
 using Azure.AI.OpenAI;
 using FluentAssertions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AgentChat.Core.Tests
 {
@@ -21,30 +16,28 @@ namespace AgentChat.Core.Tests
             return $"My name is {name}";
         }
 
-        //[ApiKeyFact("AZURE_OPENAI_API_KEY")]
-        //public async Task TwoAgentChatTest()
-        //{
-        //    var alice = new GPTAgent(
-        //        Constant.GPT35,
-        //        "Alice",
-        //        $@"You are a helpful AI assistant");
+        [ApiKeyFact("AZURE_OPENAI_API_KEY")]
+        public async Task TwoAgentChatTest()
+        {
+            var alice = Constant.GPT35.CreateAgent(
+                name: "Alice",
+                roleInformation: $@"You are a helpful AI assistant");
 
-        //    var bob = new GPTAgent(
-        //        Constant.GPT35,
-        //        "Bob",
-        //        $@"You are a helpful AI assistant",
-        //        new Dictionary<FunctionDefinition, Func<string, Task<string>>>
-        //        {
-        //            { this.TellYourNameFunction, this.TellYourNameWrapper },
-        //        });
+            var bob = Constant.GPT35.CreateAgent(
+                name: "Bob",
+                roleInformation: $@"You call TellYourName function",
+                functionMap: new Dictionary<FunctionDefinition, Func<string, Task<string>>>
+                {
+                    { this.TellYourNameFunction, this.TellYourNameWrapper },
+                });
 
-        //    var msgs = await alice.SendMessageAsync("hey what's your name?", bob, 1);
+            var msgs = await alice.SendMessageAsync(bob, "hey what's your name", maxRound: 1);
 
-        //    msgs.Should().HaveCount(2);
-        //    msgs.First().Content.Should().Be("hey what's your name?");
-        //    msgs.First().Role.Should().Be(ChatRole.Assistant);
-        //    msgs.Last().Content.Should().Be("My name is Bob");
-        //    msgs.Last().Role.Should().Be(ChatRole.User);
-        //}
+            msgs.Should().HaveCount(2);
+            msgs.First().Content.Should().Be("hey what's your name");
+            msgs.First().From.Should().Be(alice.Name);
+            msgs.Last().Content.Should().Be("My name is Bob");
+            msgs.Last().From.Should().Be(bob.Name);
+        }
     }
 }
