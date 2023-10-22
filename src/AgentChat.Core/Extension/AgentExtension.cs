@@ -36,7 +36,20 @@ namespace AgentChat
                 return await agent.CallAsync(Enumerable.Empty<IChatMessage>(), ct);
             }
 
-            return await agent.CallAsync(new[] {msg}, ct);
+            return await agent.CallAsync(new[] { msg }, ct);
+        }
+
+        public static async Task<IEnumerable<IChatMessage>> SendMessageAsync(
+            this IAgent agent,
+            IAgent receiver,
+            IEnumerable<IChatMessage>? chatHistory = null,
+            int maxRound = 10,
+            bool throwWhenMaxRoundReached = false,
+            CancellationToken ct = default)
+        {
+            var groupChat = new SequentialGroupChat(new[] { agent, receiver });
+
+            return await groupChat.CallAsync(chatHistory, maxRound, throwWhenMaxRoundReached);
         }
     }
 }

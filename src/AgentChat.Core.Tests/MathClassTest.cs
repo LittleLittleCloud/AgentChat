@@ -137,7 +137,7 @@ admin_terminate_chat
             // print chat history
             foreach (var message in chatHistory)
             {
-                _output.WriteLine(group.FormatMessage(message));
+                _output.WriteLine(message.FormatMessage());
             }
 
             // check if there's five questions from teacher

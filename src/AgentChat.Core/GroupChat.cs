@@ -6,14 +6,12 @@ using System.Threading.Tasks;
 
 namespace AgentChat
 {
-    public partial class GroupChat
+    public class GroupChat : IGroupChat
     {
         private IChatLLM chatLLM;
         private IAgent admin;
         private List<IAgent> agents = new List<IAgent>();
         private IEnumerable<IChatMessage> initializeMessages = new List<IChatMessage>();
-        public const string TERMINATE = "[GROUPCHAT_TERMINATE]";
-        public const string CLEAR_MESSAGES = "// ignore this line [GROUPCHAT_CLEAR_MESSAGES]";
 
         public GroupChat(
             IChatLLM chatLLM,
@@ -43,7 +41,7 @@ From admin:
             var conv = this.ProcessConversationsForRolePlay(this.chatLLM, this.initializeMessages, conversationHistory);
 
             var messages = new IChatMessage[] { systemMessage }.Concat(conv);
-            var response = await this.chatLLM.GetChatCompletionsWithRetryAsync(messages, temperature: 0, stopWords: new[] {":"});
+            var response = await this.chatLLM.GetChatCompletionsWithRetryAsync(messages, temperature: 0, stopWords: new[] { ":" });
 
             var name = response.Message?.Content;
 
@@ -88,12 +86,11 @@ From admin:
                 conversationWithName = Enumerable.Empty<IChatMessage>();
             }
 
-
             var agent = await this.SelectNextSpeakerAsync(conversationWithName) ?? this.admin;
             IChatMessage? result = null;
             var processedConversation = this.ProcessConversationForAgent(this.initializeMessages, conversationWithName);
             result = await agent.CallAsync(processedConversation) ?? throw new Exception("No result is returned.");
-            this.PrettyPrintMessage(result);
+            result.PrettyPrintMessage();
             var updatedConversation = conversationWithName.Append(result);
 
             // if message is terminate message, then terminate the conversation
@@ -103,24 +100,6 @@ From admin:
             }
 
             return await this.CallAsync(updatedConversation, maxRound - 1, throwExceptionWhenMaxRoundReached);
-        }
-
-        public void PrettyPrintMessage(IChatMessage message)
-        {
-            var result = this.FormatMessage(message);
-            Console.WriteLine(result);
-        }
-
-        public string FormatMessage(IChatMessage message)
-        {
-            // write result
-            var result = $"Message from {message.From}\n";
-            // write a seperator
-            result += new string('-', 20) + "\n";
-            result += message.Content + "\n";
-            result += new string('-', 20) + "\n";
-
-            return result;
         }
     }
 }
