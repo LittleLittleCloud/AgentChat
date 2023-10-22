@@ -15,6 +15,8 @@ First add the following package reference to your project file:
 </ItemGroup>
 ```
 
+> Nightly Build Feed: https://www.myget.org/F/agentchat/api/v3/index.json
+
 Then you can using the following code to create an agent chat.
 
 #### TwoAgent Chat
@@ -112,6 +114,9 @@ var chatHistory = await heisenberg.SendMessagesAsync(
 ```
 
 `AgentChat` provides a source generator that generates `FunctionDefition` and wrapper caller according to the signature of a function. For more information, please check [Facilitate Chat FunctionCall for GPT-series model](./src/AgentChat.Core/README.md#facilitate-chat-functioncall-for-gpt-series-model).
+
+## Notebook Examples
+You can find notebook examples from [here](./notebooks/).
 
 ## More Examples
 You can find more examples from below table.

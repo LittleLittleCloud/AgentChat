@@ -7,13 +7,13 @@ namespace AgentChat.Core.Tests
     public partial class TwoAgentTest
     {
         /// <summary>
-        /// tell your name
+        /// say name
         /// </summary>
-        /// <param name="name">your name.</param>
+        /// <param name="name">name.</param>
         [FunctionAttribution]
-        public async Task<string> TellYourName(string name)
+        public async Task<string> SayName(string name)
         {
-            return $"My name is {name}";
+            return $"SayName: {name}";
         }
 
         [ApiKeyFact("AZURE_OPENAI_API_KEY")]
@@ -25,18 +25,38 @@ namespace AgentChat.Core.Tests
 
             var bob = Constant.GPT35.CreateAgent(
                 name: "Bob",
-                roleInformation: $@"You call TellYourName function",
+                roleInformation: $@"You call SayName function",
                 functionMap: new Dictionary<FunctionDefinition, Func<string, Task<string>>>
                 {
-                    { this.TellYourNameFunction, this.TellYourNameWrapper },
+                    { this.SayNameFunction, this.SayNameWrapper },
                 });
 
-            var msgs = await alice.SendMessageAsync(bob, "hey what's your name", maxRound: 1);
+            var msgs = await alice.SendMessageAsync(bob, "hey what's my name", maxRound: 1);
 
             msgs.Should().HaveCount(2);
-            msgs.First().Content.Should().Be("hey what's your name");
+            msgs.First().Content.Should().Be("hey what's my name");
             msgs.First().From.Should().Be(alice.Name);
-            msgs.Last().Content.Should().Be("My name is Bob");
+            msgs.Last().Content.Should().Be("SayName: Alice");
+            msgs.Last().From.Should().Be(bob.Name);
+        }
+
+        [ApiKeyFact("AZURE_OPENAI_API_KEY")]
+        public async Task TwoAgentChatTest2()
+        {
+            var alice = Constant.GPT35.CreateAgent(
+                name: "Alice",
+                roleInformation: $@"You are a helpful AI assistant");
+
+            var bob = Constant.GPT35.CreateAgent(
+                name: "Bob",
+                roleInformation: $@"You are a helpful AI assistant");
+
+            var msgs = await alice.SendMessageAsync(bob, "hey what's my name", maxRound: 1);
+
+            msgs.Should().HaveCount(2);
+            msgs.First().Content.Should().Be("hey what's my name");
+            msgs.First().From.Should().Be(alice.Name);
+            msgs.Last().Content.Should().Be("SayName: Alice");
             msgs.Last().From.Should().Be(bob.Name);
         }
     }
