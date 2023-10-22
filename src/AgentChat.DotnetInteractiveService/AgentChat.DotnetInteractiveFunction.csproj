@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.DotNet.Interactive.VisualStudio" Version="$(MicrosoftDotnetInteractive)" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <EmbeddedResource Include="dotnet-tools.json" />
+	  <EmbeddedResource Include="RestoreInteractive.config" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <ProjectReference Include="..\AgentChat.Core\AgentChat.Core.csproj" />
+		<ProjectReference Include="..\AgentChat.SourceGenerator\AgentChat.SourceGenerator.csproj"
+						  OutputItemType="Analyzer"
+						  ReferenceOutputAssembly="true" />
+
+	</ItemGroup>
+
+</Project>

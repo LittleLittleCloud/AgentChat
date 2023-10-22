@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<Description>Agent Chat</Description>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\AgentChat.SourceGenerator\AgentChat.SourceGenerator.csproj">
+			<IncludeAssets>all</IncludeAssets>
+			<OutputItemType>Analyzer</OutputItemType>
+			<ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+		</ProjectReference>
+		<ProjectReference Include="..\AgentChat.SourceGenerator\AgentChat.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+		<PackageReference Include="Azure.AI.OpenAI" Version="$(AzureOpenAIVersion)" />
+	</ItemGroup>
+
+</Project>
