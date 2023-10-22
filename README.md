@@ -15,6 +15,8 @@ First add the following package reference to your project file:
 </ItemGroup>
 ```
 
+> Nightly Build Feed: https://www.myget.org/F/agentchat/api/v3/index.json
+
 Then you can using the following code to create an agent chat.
 
 #### TwoAgent Chat
