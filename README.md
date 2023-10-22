@@ -1,6 +1,6 @@
-# Group Chat Examples for Dotnet
+# An unofficial implementation of AutoGen for dotnet
 
-This repo contains the code examples for group chat.
+This repo contains an unofficial implementation of AutoGen for dotnet. It is a library that allows you to build a group chat bot that can help you to resolve tasks by writing and running code.
 
 [![CI](https://github.com/LittleLittleCloud/CopilotBuilder/actions/workflows/ci.yml/badge.svg)](https://github.com/LittleLittleCloud/CopilotBuilder/actions/workflows/ci.yml)
 [![nightly-build](https://github.com/LittleLittleCloud/CopilotBuilder/actions/workflows/nightly-build.yml/badge.svg)](https://github.com/LittleLittleCloud/CopilotBuilder/actions/workflows/nightly-build.yml)
