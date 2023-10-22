@@ -27,7 +27,7 @@ namespace AgentChat
         public async Task<IEnumerable<IChatMessage>> CallAsync(
             IEnumerable<IChatMessage>? conversationWithName = null,
             int maxRound = 10,
-            bool throwExceptionWhenMaxRoundReached = true)
+            bool throwExceptionWhenMaxRoundReached = false)
         {
             var conversationHistory = new List<IChatMessage>();
             if (conversationWithName != null)
@@ -46,6 +46,7 @@ namespace AgentChat
                 var currentSpeaker = this.SelectNextSpeaker(lastSpeaker);
                 var processedConversation = this.ProcessConversationForAgent(this.initializeMessages, conversationHistory);
                 var result = await currentSpeaker.CallAsync(processedConversation) ?? throw new Exception("No result is returned.");
+                result.PrettyPrintMessage();
                 conversationHistory.Add(result);
 
                 // if message is terminate message, then terminate the conversation

@@ -64,7 +64,7 @@ From admin:
             this.initializeMessages = this.initializeMessages.Append(message);
         }
 
-        public async Task<IEnumerable<IChatMessage>> CallAsync(IEnumerable<IChatMessage>? conversationWithName = null, int maxRound = 10, bool throwExceptionWhenMaxRoundReached = true)
+        public async Task<IEnumerable<IChatMessage>> CallAsync(IEnumerable<IChatMessage>? conversationWithName = null, int maxRound = 10, bool throwExceptionWhenMaxRoundReached = false)
         {
             if (maxRound == 0)
             {
