@@ -32,9 +32,6 @@ namespace AgentChat
                 messages = messages.Skip(lastCLRMessageIndex);
             }
 
-            Console.WriteLine($"message length {messages.Count()}");
-
-
             return messages;
         }
 

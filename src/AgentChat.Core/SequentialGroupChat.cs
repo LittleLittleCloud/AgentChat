@@ -46,7 +46,6 @@ namespace AgentChat
                 var currentSpeaker = this.SelectNextSpeaker(lastSpeaker);
                 var processedConversation = this.ProcessConversationForAgent(this.initializeMessages, conversationHistory);
                 var result = await currentSpeaker.CallAsync(processedConversation) ?? throw new Exception("No result is returned.");
-                result.PrettyPrintMessage();
                 conversationHistory.Add(result);
 
                 // if message is terminate message, then terminate the conversation
