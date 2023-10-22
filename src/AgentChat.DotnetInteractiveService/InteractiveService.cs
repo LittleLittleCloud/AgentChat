@@ -187,7 +187,7 @@ namespace AgentChat.DotnetInteractiveService
             this.WriteLine("Restore dotnet interactive tool");
             // write RestoreInteractive.config from embedded resource to this.workingDirectory
             var assembly = Assembly.GetAssembly(typeof(InteractiveService))!;
-            var resourceName = "GroupChatExample.DotnetInteractiveService.RestoreInteractive.config";
+            var resourceName = "AgentChat.DotnetInteractiveFunction.RestoreInteractive.config";
             using (var stream = assembly.GetManifestResourceStream(resourceName)!)
             using (var fileStream = File.Create(Path.Combine(this.workingDirectory, "RestoreInteractive.config")))
             {
@@ -196,7 +196,7 @@ namespace AgentChat.DotnetInteractiveService
 
             // write dotnet-tool.json from embedded resource to this.workingDirectory
 
-            resourceName = "GroupChatExample.DotnetInteractiveService.dotnet-tools.json";
+            resourceName = "AgentChat.DotnetInteractiveFunction.dotnet-tools.json";
             using (var stream2 = assembly.GetManifestResourceStream(resourceName)!)
             using (var fileStream2 = File.Create(Path.Combine(this.workingDirectory, "dotnet-tools.json")))
             {
