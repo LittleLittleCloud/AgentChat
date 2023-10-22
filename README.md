@@ -70,7 +70,43 @@ var chatHistory = await alice.SendMessagesAsync(
 // From Carol: Hi, I am Carol.
 ```
 
-#### Function call support
+#### Function call
+You can augment agent chat with function call.
+```csharp
+// file: SayNameFunction.cs
+
+using AgentChat;
+/// <summary>
+/// Say name.
+/// </summary>
+/// <param name="name">name.</param>
+[FunctionAttribution]
+public async Task<string> SayName(string name)
+{
+    return $"Your name is {name}.";
+}
+
+// file: Program.cs
+using AgentChat;
+var gpt35 = GPT.CreateFromOpenAI(OPENAI_API_KEY, GPT_35_MODEL_ID);
+var heisenberg = gpt35.CreateAgent(
+    name: "Heisenberg",
+    roleInformation: "You are Heisenberg.");
+
+var bob = gpt35.CreateAgent(
+    name: "Bob",
+    roleInformation: "You call SayName function.");
+
+var chatHistory = await heisenberg.SendMessagesAsync(
+    bob,
+    "Say, My, Name.",
+    maxRound: 1);
+
+// chatHistory
+// From Heisenberg: Say, My, Name.
+// From Bob: Your name is Heisenberg.
+```
+
 `AgentChat` provides a source generator that generates `FunctionDefition` and wrapper caller according to the signature of a function. For more information, please check [Facilitate Chat FunctionCall for GPT-series model](./src/AgentChat.Core/README.md#facilitate-chat-functioncall-for-gpt-series-model).
 
 ## More Examples
