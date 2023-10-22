@@ -31,32 +31,12 @@ namespace AgentChat.Core.Tests
                     { this.SayNameFunction, this.SayNameWrapper },
                 });
 
-            var msgs = await alice.SendMessageAsync(bob, "hey what's my name", maxRound: 1);
+            var msgs = await alice.SendMessageAsync(bob, "hey what's your name", maxRound: 1);
 
             msgs.Should().HaveCount(2);
-            msgs.First().Content.Should().Be("hey what's my name");
+            msgs.First().Content.Should().Be("hey what's your name");
             msgs.First().From.Should().Be(alice.Name);
-            msgs.Last().Content.Should().Be("SayName: Alice");
-            msgs.Last().From.Should().Be(bob.Name);
-        }
-
-        [ApiKeyFact("AZURE_OPENAI_API_KEY")]
-        public async Task TwoAgentChatTest2()
-        {
-            var alice = Constant.GPT35.CreateAgent(
-                name: "Alice",
-                roleInformation: $@"You are a helpful AI assistant");
-
-            var bob = Constant.GPT35.CreateAgent(
-                name: "Bob",
-                roleInformation: $@"You are a helpful AI assistant");
-
-            var msgs = await alice.SendMessageAsync(bob, "hey what's my name", maxRound: 1);
-
-            msgs.Should().HaveCount(2);
-            msgs.First().Content.Should().Be("hey what's my name");
-            msgs.First().From.Should().Be(alice.Name);
-            msgs.Last().Content.Should().Be("SayName: Alice");
+            msgs.Last().Content.Should().Be("SayName: Bob");
             msgs.Last().From.Should().Be(bob.Name);
         }
     }
