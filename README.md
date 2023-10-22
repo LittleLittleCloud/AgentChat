@@ -88,6 +88,7 @@ public async Task<string> SayName(string name)
 
 // file: Program.cs
 using AgentChat;
+var sayNameFunction = new SayNameFunction();
 var gpt35 = GPT.CreateFromOpenAI(OPENAI_API_KEY, GPT_35_MODEL_ID);
 var heisenberg = gpt35.CreateAgent(
     name: "Heisenberg",
@@ -95,7 +96,10 @@ var heisenberg = gpt35.CreateAgent(
 
 var bob = gpt35.CreateAgent(
     name: "Bob",
-    roleInformation: "You call SayName function.");
+    roleInformation: "You call SayName function.",
+    functionMap: new new Dictionary<FunctionDefinition, Func<string, Task<string>>>{
+        { sayNameFunction.SayNameFunction, sayNameFunction.SayNameWrapper }
+    });
 
 var chatHistory = await heisenberg.SendMessagesAsync(
     bob,
@@ -110,7 +114,7 @@ var chatHistory = await heisenberg.SendMessagesAsync(
 `AgentChat` provides a source generator that generates `FunctionDefition` and wrapper caller according to the signature of a function. For more information, please check [Facilitate Chat FunctionCall for GPT-series model](./src/AgentChat.Core/README.md#facilitate-chat-functioncall-for-gpt-series-model).
 
 ## More Examples
-You can find more examples under [src](./src/) folder.
+You can find more examples from below table.
 
 <!-- table -->
 <!-- column: example name, path, description -->
