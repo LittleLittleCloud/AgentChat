@@ -6,31 +6,26 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AgentChat.Core
+namespace AgentChat
 {
-    public partial class GPTAgent : IDisposable, IAgent
+    public partial class GPTAgent : IAgent
     {
-        private readonly string _model;
+        private readonly GPT _gpt;
         private readonly string _name;
         private readonly string _roleInformation;
-        private OpenAIClient _client;
         private readonly Dictionary<FunctionDefinition, Func<string, Task<string>>> _functionMaps;
         private readonly float _temperature = 0f;
 
         public GPTAgent(
-            OpenAIClient client,
-            string model,
+            GPT gpt,
             string name,
             string roleInformation,
-            Dictionary<FunctionDefinition, Func<string, Task<string>>>? functionMaps = null,
-            float temperature = 0f)
+            Dictionary<FunctionDefinition, Func<string, Task<string>>>? functionMaps = null)
         {
-            this._model = model;
-            this._client = client;
+            _gpt = gpt;
             _name = name;
             _roleInformation = roleInformation;
             _functionMaps = functionMaps ?? new Dictionary<FunctionDefinition, Func<string, Task<string>>>();
-            _temperature = temperature;
         }
 
 
@@ -40,19 +35,22 @@ namespace AgentChat.Core
 
         public Dictionary<FunctionDefinition, Func<string, Task<string>>> FunctionMaps { get => _functionMaps; }
 
-        public IEnumerable<ChatMessage> CreateSystemMessages()
+        public IEnumerable<GPTChatMessage> CreateSystemMessages()
         {
             var systemMessage = new ChatMessage(ChatRole.System, $"You are {this.Name}, {this._roleInformation}");
 
-            return new ChatMessage[]
+            return new GPTChatMessage[]
             {
-                systemMessage,
+                new GPTChatMessage(systemMessage),
             };
         }
 
-        public async Task<ChatMessage> CallAsync(IEnumerable<ChatMessage> conversation, CancellationToken ct = default)
+        public async Task<IChatMessage> CallAsync(IEnumerable<IChatMessage> conversation, CancellationToken ct = default)
         {
-            var chatMessage = await StepCallAsync(conversation, ct);
+            var chatMessages = this.ProcessChatMessages(conversation)
+                    .Select(chatMessage => new GPTChatMessage(chatMessage))
+                    .ToList();
+            var chatMessage = (await StepCallAsync(chatMessages, ct)).ChatMessage;
 
             // if chatMessage is function call, call that function
             if (chatMessage.FunctionCall is FunctionCall function)
@@ -84,50 +82,32 @@ namespace AgentChat.Core
                     chatMessage.FunctionCall = null;
                 }
 
-                return chatMessage;
+                return new GPTChatMessage(chatMessage)
+                {
+                    From = this.Name,
+                };
             }
             else
             {
-                return chatMessage;
+                return new GPTChatMessage(chatMessage)
+                {
+                    From = this.Name,
+                };
             }
         }
 
-        public async Task<ChatMessage> StepCallAsync(IEnumerable<ChatMessage> conversation, CancellationToken ct = default)
+        public async Task<GPTChatMessage> StepCallAsync(IEnumerable<GPTChatMessage> conversation, CancellationToken ct = default)
         {
             var systemMessages = CreateSystemMessages();
             var messages = systemMessages.Concat(conversation).ToList();
 
-            var option = new ChatCompletionsOptions()
-            {
-                Temperature = _temperature,
-                MaxTokens = 1024,
-                Functions = _functionMaps?.Select(kv => kv.Key)?.ToList() ?? new List<FunctionDefinition>(),
-            };
+            var result = await _gpt.GetChatCompletionsAsync(
+                messages,
+                temperature: _temperature,
+                stopWords: new[] { "<eof_msg>" },
+                ct: ct);
 
-            //option.StopSequences.Add("<eof_name>");
-            option.StopSequences.Add("<eof_msg>");
-
-            foreach (var message in messages)
-            {
-                option.Messages.Add(message);
-            }
-
-            var result = await _client.GetChatCompletionsWithRetryAsync(this._model, option, ct);
-
-            //if (result.Value.Choices.Last().FinishReason == CompletionsFinishReason.Stopped)
-            //{
-            //    var message = result.Value.Choices.Last().Message;
-            //    if (message.Content.StartsWith("From") && message.Content.Split(' ').Length == 2)
-            //    {
-            //        message.Content += "<eof_name>:";
-            //    }
-            //}
-
-            return result.Value.Choices.Last().Message;
-        }
-
-        public void Dispose()
-        {
+            return result.Message as GPTChatMessage ?? throw new Exception("result is not GPTChatMessage");
         }
     }
 }

@@ -1,13 +1,6 @@
 ﻿using FluentAssertions;
-using Microsoft.DotNet.Interactive.Commands;
-using Microsoft.DotNet.Interactive.Events;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reactive.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
@@ -53,8 +46,8 @@ Console.WriteLine(""hello world"");
 
             await this.TestCodeSnippet(service, hello_world, "hello world");
             await this.TestCodeSnippet(
-                service, 
-                code:@"
+                service,
+                code: @"
 Console.WriteLine(""hello world""
 ",
                 expectedOutput: "Error: (2,32): error CS1026: ) expected");
@@ -72,7 +65,7 @@ Console.WriteLine(""hello world""
                 var ps = @"echo ""hello world""";
                 await this.TestPowershellCodeSnippet(service, ps, "hello world");
             }
-            
+
         }
 
         private async Task TestPowershellCodeSnippet(InteractiveService service, string code, string expectedOutput)

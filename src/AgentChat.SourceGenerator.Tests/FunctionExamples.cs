@@ -1,6 +1,4 @@
-﻿using AgentChat.Core;
-using System.Text;
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace AgentChat.SourceGenerator.Tests
 {

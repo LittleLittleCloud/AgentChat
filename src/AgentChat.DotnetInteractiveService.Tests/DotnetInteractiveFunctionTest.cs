@@ -1,13 +1,7 @@
-﻿using FluentAssertions;
-using AgentChat.DotnetInteractiveService;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AgentChat.Core.Tests;
+using AgentChat.Example.Share;
+using FluentAssertions;
 using Xunit.Abstractions;
-using AgentChat.Core;
-using AgentChat.Core.Tests;
 
 namespace AgentChat.DotnetInteractiveService.Tests
 {
@@ -34,15 +28,13 @@ namespace AgentChat.DotnetInteractiveService.Tests
             _function.Dispose();
         }
 
-        [ApiKeyFact]
+        [ApiKeyFact("AZURE_OPENAI_API_KEY")]
         public async Task DotnetInteractiveFunction_RunCSharpCode_TestAsync()
         {
-            var agent = new GPTAgent(
-                Constant.GPT,
-                Constant.GPT_35_MODEL_ID,
-                "tester",
-                "tester",
-                new Dictionary<Azure.AI.OpenAI.FunctionDefinition, Func<string, Task<string>>>
+            var agent = Constant.GPT35.CreateAgent(
+                name: "tester",
+                roleInformation: "tester",
+                functionMap: new Dictionary<Azure.AI.OpenAI.FunctionDefinition, Func<string, Task<string>>>
                 {
                     { _function.RunCodeFunction, _function.RunCodeWrapper },
                 });
@@ -53,16 +45,16 @@ Console.WriteLine(""Hello World"");
 ```
 ";
             var result = await agent.SendMessageAsync(msg);
-            result?.FunctionCall?.Name.Should().Be(_function.RunCodeFunction.Name);
+            result.Should().BeOfType<GPTChatMessage>();
+            (result as GPTChatMessage)?.FunctionCall?.Name.Should().Be(_function.RunCodeFunction.Name);
             result?.Content.Should().StartWith("Hello World");
         }
 
-        [ApiKeyFact]
+        [ApiKeyFact("AZURE_OPENAI_API_KEY")]
         public async Task DotnetInteractiveFunction_InstallNugetPackage_TestAsync()
         {
             var agent = new GPTAgent(
-                Constant.GPT,
-                Constant.GPT_35_MODEL_ID,
+                Constant.GPT35,
                 "tester",
                 "tester",
                 new Dictionary<Azure.AI.OpenAI.FunctionDefinition, Func<string, Task<string>>>
@@ -75,7 +67,8 @@ Console.WriteLine(""Hello World"");
 - Microsoft.ML.AutoML
 ";
             var result = await agent.SendMessageAsync(msg);
-            result?.FunctionCall?.Name.Should().Be(_function.InstallNugetPackagesFunction.Name);
+            result.Should().BeOfType<GPTChatMessage>();
+            (result as GPTChatMessage)?.FunctionCall?.Name.Should().Be(_function.InstallNugetPackagesFunction.Name);
             result?.Content.Should().Contain("Microsoft.ML");
             result?.Content.Should().Contain("Microsoft.ML.AutoML");
         }

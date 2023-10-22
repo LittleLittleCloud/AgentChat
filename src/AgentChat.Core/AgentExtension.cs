@@ -1,32 +1,41 @@
 ﻿using Azure.AI.OpenAI;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AgentChat.Core
+namespace AgentChat
 {
     public static class AgentExtension
     {
-        public static async Task<IEnumerable<(ChatMessage, string)>> SendMessageAsync(
+        public static async Task<IEnumerable<IChatMessage>> SendMessageAsync(
             this IAgent agent,
-            string message,
+            IChatMessage msg,
             GroupChat groupChat,
             int maxRound = 10,
             bool throwWhenMaxRoundReached = true,
             CancellationToken ct = default)
         {
-            var msg = new ChatMessage(ChatRole.User, message);
-            return await groupChat.CallAsync(new[] {(msg, agent.Name)}, maxRound, throwWhenMaxRoundReached);
+            if (msg.From != agent.Name)
+            {
+                throw new ArgumentException("The message is not from the agent", nameof(msg));
+            }
+
+            return await groupChat.CallAsync(new[] { msg }, maxRound, throwWhenMaxRoundReached);
         }
 
-        public static async Task<ChatMessage> SendMessageAsync(
+        public static async Task<IChatMessage> SendMessageAsync(
             this IAgent agent,
-            string message,
+            IChatMessage? msg = null,
             CancellationToken ct = default)
         {
-            var msg = new ChatMessage(ChatRole.User, message);
+            if (msg == null)
+            {
+                return await agent.CallAsync(Enumerable.Empty<IChatMessage>(), ct);
+            }
+
             return await agent.CallAsync(new[] {msg}, ct);
         }
     }

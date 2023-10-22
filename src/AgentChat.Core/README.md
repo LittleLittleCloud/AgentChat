@@ -1,11 +1,10 @@
-# The helper library for group chat examples
+# The core library for AgentChat
 ## Short cut
 - [Facilitate Chat FunctionCall for GPT-series model](#facilitate-chat-functioncall-for-gpt-series-model)
-- [Dotnet interpreter](#dotnet-interpreter)
 
 ## Usage
 ### Facilitate [Chat FunctionCall](https://learn.microsoft.com/en-us/dotnet/api/overview/azure/ai.openai-readme?view=azure-dotnet-preview#use-chat-functions) for GPT-series model
-`GroupChatExample.Helper` provides a source generator that generates `FunctionDefition` and wrapper caller according to the signature of a function. Simply add `GroupChatExample.Helper` to your project and add the `[FunctionAttribution]` to your function 
+`AgentChat` provides a source generator that generates `FunctionDefition` and wrapper caller according to the signature of a function. Simply add `AgentChat` to your project and add the `[FunctionAttribution]` to your function 
 
 > Note
 > - The function must be `partial`
@@ -14,7 +13,7 @@
 
 ```csharp
 // file: ChatFunction.cs
-using GroupChatExample.Helper;
+using AgentChat;
 
 public partial class ChatFunction
 {
@@ -111,50 +110,5 @@ if (responseChoice.FinishReason == CompletionsFinishReason.FunctionCall && respo
     var result = GetCurrentWeather(responseChoice.Arguments);
     Console.WriteLine(result);
     // The weather in Boston on 2021-06-13 will be sunny.
-}
-```
-
-You can refer to [src/GroupChatExample.SourceGenerator.Tests/FunctionExamples.cs](./src/GroupChatExample.SourceGenerator.Tests/FunctionExamples.cs) for more examples. You can also find some more cases in [OpenAPIAgent](./src/GroupChatExample.Example/OpenAPIAgent/) as well.
-
-### Dotnet interpreter
-`GroupChatExample.Helper` provides a dotnet interpreter that can be used to run dotnet script from LLM response. This powerful feature allows llm to address almost arbitrary scenarios as long as it can be resolved by dotnet script.
-
-To consume dotnet interpreter, simply wrap it as a `FunctionCall` so LLM can call it:
-```csharp
-using GroupChatExample.DotnetInteractiveService;
-
-public partial class OpenAPIAgent
-{
-    private InteractiveService? _interactiveService = null;
-
-    public async Task InitializeAsync()
-    {
-        var workDir = Path.Combine(Path.GetTempPath(), "OpenAPIAgent");
-        if (!Directory.Exists(workDir))
-        {
-            Directory.CreateDirectory(workDir);
-        }
-
-        _interactiveService = new InteractiveService(workDir);
-        await _interactiveService.StartAsync(workDir, default);
-    }
-
-    /// <summary>
-    /// Run dotnet script code in dotnet interactive notebook and return the result.
-    /// </summary>
-    /// <param name="code">dotnet script in plain text, don't include nuget install script, required.</param>
-    /// <param name="nugetDependencies">nuget package dependencies, required.</param>
-    [FunctionAttribution]
-    public async Task<string> ExecuteNotebook(string code, string[]? nugetDependencies = null)
-    {
-        if (this._interactiveService == null)
-        {
-            throw new Exception("InteractiveService is not initialized.");
-        }
-
-        // submit code to dotnet interpreter
-        var result = await this._interactiveService.SubmitCodeAsync(code, default);
-        return result ?? "no output is available.";
-    }
 }
 ```

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AgentChat.SourceGenerator
+﻿namespace AgentChat.SourceGenerator
 {
     internal class FunctionContract
     {
@@ -27,7 +23,7 @@ namespace AgentChat.SourceGenerator
 
         public string? JsonItemType { get; set; }
 
-        public string? Type { get; set; } 
+        public string? Type { get; set; }
 
         public bool IsOptional { get; set; }
 

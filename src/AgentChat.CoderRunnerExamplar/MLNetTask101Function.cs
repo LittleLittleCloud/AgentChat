@@ -1,5 +1,4 @@
 ﻿using Azure.AI.OpenAI;
-using AgentChat.Core;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -9,14 +8,12 @@ namespace AgentChat.CoderRunnerExamplar
     public partial class MLNetExamplarFunction
     {
         private HttpClient _httpClient;
-        private OpenAIClient _openAIClient;
-        private string _model;
+        private readonly GPT _gpt;
 
-        public MLNetExamplarFunction(HttpClient httpClient, OpenAIClient openAIClient, string model)
+        public MLNetExamplarFunction(HttpClient httpClient, GPT _gpt)
         {
             _httpClient = httpClient;
-            _openAIClient = openAIClient;
-            _model = model;
+            _gpt = _gpt;
         }
 
         /// <summary>
@@ -35,10 +32,8 @@ namespace AgentChat.CoderRunnerExamplar
             }
 
             // else, use llm to summarize the result
-            var agent = new GPTAgent(
-                _openAIClient,
-                _model,
-                "admin",
+            var agent = _gpt.CreateAgent(
+                name: "admin",
                 @$"Fix the error of given code and explain how you fix it. Put your answer between ```csharp and ```
 Say you don't know how to fix the error if provided reference is not helpful. Please think step by step.
 If the code is too long, you can just provide the fixed part. If the code contains Main function, convert it to top-level statement style.
@@ -62,9 +57,9 @@ According to MLNet reference, the error is caused by xxx. Here's the fix code
 I don't know how to fix this error as MLNet reference is not helpful.
 -----
 ");
-            var response = await agent.CallAsync(Enumerable.Empty<ChatMessage>());
+            var response = await agent.SendMessageAsync(null);
 
-            if (response is null)
+            if (response is null || response.Content is null)
             {
                 throw new Exception("response is null");
             }
@@ -90,8 +85,7 @@ I don't know how to fix this error as MLNet reference is not helpful.
 
             // else, use llm to summarize the result
             var agent = new GPTAgent(
-                _openAIClient,
-                _model,
+                _gpt,
                 "admin",
                 @$"You create several mlnet example from reference to resolve given step. Put your answer between ```csharp and ```
 Say you don't have example if provided reference is not helpful. Please think step by step.
@@ -113,9 +107,9 @@ xxx
 I don't have example for this step.
 ---
 ");
-            var response = await agent.CallAsync(Enumerable.Empty<ChatMessage>());
+            var response = await agent.SendMessageAsync();
 
-            if (response is null)
+            if (response is null || response.Content is null)
             {
                 throw new Exception("response is null");
             }
