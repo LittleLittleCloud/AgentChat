@@ -5,12 +5,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AgentChat.Core
+namespace AgentChat
 {
     public interface IAgent
     {
         public string Name { get; }
 
-        public Task<ChatMessage> CallAsync(IEnumerable<ChatMessage> conversation, CancellationToken ct = default);
+        public Task<IChatMessage> CallAsync(IEnumerable<IChatMessage> conversation, CancellationToken ct = default);
     }
 }

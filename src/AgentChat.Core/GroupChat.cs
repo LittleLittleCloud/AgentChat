@@ -4,119 +4,69 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace AgentChat.Core
+namespace AgentChat
 {
     public partial class GroupChat
     {
+        private IChatLLM chatLLM;
         private IAgent admin;
         private List<IAgent> agents = new List<IAgent>();
-        private OpenAIClient _client;
-        private readonly string _model;
-        private IEnumerable<(ChatMessage, string)> initializeMessages = new List<(ChatMessage, string)>();
-        private IEnumerable<string> pleaseSpeakMessageCandidates = new[]
-        {
-            "It's your turn to speak.",
-            "Please speak.",
-            "proceed the conversation please",
-        };
+        private IEnumerable<IChatMessage> initializeMessages = new List<IChatMessage>();
         public const string TERMINATE = "[GROUPCHAT_TERMINATE]";
         public const string CLEAR_MESSAGES = "// ignore this line [GROUPCHAT_CLEAR_MESSAGES]";
 
-        /// <summary>
-        /// terminate the group chat.
-        /// </summary>
-        /// <param name="message">terminate message.</param>
-        [FunctionAttribution]
-        public async Task<string> TerminateGroupChat(string message)
-        {
-            return $"{TERMINATE}: {message}";
-        }
-
-        /// <summary>
-        /// Summarize the current conversation.
-        /// </summary>
-        /// <param name="context">conversation context.</param>
-        [FunctionAttribution]
-        public async Task<string> ClearGroupChat(string context)
-        {
-            return @$"{context}
-<eof_msg>
-{CLEAR_MESSAGES}
-";
-        }
-
-        public GroupChat(OpenAIClient client,
-            string model,
+        public GroupChat(
+            IChatLLM chatLLM,
             IAgent admin,
             IEnumerable<IAgent> agents,
-            IEnumerable<(ChatMessage, string)>? initializeMessages = null)
+            IEnumerable<IChatMessage>? initializeMessages = null)
         {
-            this._client = client;
-            this._model = model;
+            this.chatLLM = chatLLM;
             this.admin = admin;
             this.agents = agents.ToList();
             this.agents.Add(admin);
-            this.initializeMessages = initializeMessages ?? new List<(ChatMessage, string)>();
+            this.initializeMessages = initializeMessages ?? new List<IChatMessage>();
         }
 
-        public async Task<IAgent?> SelectNextSpeakerAsync(IEnumerable<(ChatMessage, string)> conversationWithName)
+        public async Task<IAgent?> SelectNextSpeakerAsync(IEnumerable<IChatMessage> conversationHistory)
         {
             var agent_names = this.agents.Select(x => x.Name).ToList();
-            var systemMessage = new ChatMessage(
-                ChatRole.System,
-                $@"You are in a role play game. Carefully read the conversation history and carry on the conversation.
+            var systemMessage = chatLLM.CreateChatMessage(ChatRole.System,
+                content: $@"You are in a role play game. Carefully read the conversation history and carry on the conversation.
 The available roles are:
 {string.Join(",", agent_names)}
 
 Each message will start with 'From name:', e.g:
 From admin:
-//your message//."
-                );
+//your message//.");
 
-            var conv = this.ProcessConversationsForRolePlay(this.initializeMessages, conversationWithName);
+            var conv = this.ProcessConversationsForRolePlay(this.chatLLM, this.initializeMessages, conversationHistory);
 
-            var messages = new[] { systemMessage }.Concat(conv);
+            var messages = new IChatMessage[] { systemMessage }.Concat(conv);
+            var response = await this.chatLLM.GetChatCompletionsWithRetryAsync(messages, temperature: 0, stopWords: new[] {":"});
 
-            var option = new ChatCompletionsOptions
-            {
-                Temperature = 0,
-            };
+            var name = response.Message?.Content;
 
-            option.StopSequences.Add(":");
-
-            foreach (var message in messages)
-            {
-                option.Messages.Add(message);
-            }
-
-            var response = await this._client.GetChatCompletionsWithRetryAsync(this._model, option);
-
-            var name = response.Value.Choices.First().Message.Content;
-            var stopReason = response.Value.Choices.First().FinishReason;
-
-            if (stopReason == CompletionsFinishReason.Stopped)
+            try
             {
                 // remove From
-                name = name.Substring(5);
+                name = name!.Substring(5);
                 var agent = this.agents.FirstOrDefault(x => x.Name.ToLower() == name.ToLower());
 
                 return agent;
             }
-
-            return null;
-        }
-
-        public void AddInitializeMessage(string message, string name)
-        {
-            var chatMessage = new ChatMessage
+            catch (Exception)
             {
-                Content = message,
-                Role = ChatRole.User,
-            };
-            this.initializeMessages = this.initializeMessages.Append((chatMessage, name));
+                return null;
+            }
         }
 
-        public async Task<IEnumerable<(ChatMessage, string)>> CallAsync(IEnumerable<(ChatMessage, string)>? conversationWithName = null, int maxRound = 10, bool throwExceptionWhenMaxRoundReached = true)
+        public void AddInitializeMessage(IChatMessage message)
+        {
+            this.initializeMessages = this.initializeMessages.Append(message);
+        }
+
+        public async Task<IEnumerable<IChatMessage>> CallAsync(IEnumerable<IChatMessage>? conversationWithName = null, int maxRound = 10, bool throwExceptionWhenMaxRoundReached = true)
         {
             if (maxRound == 0)
             {
@@ -126,7 +76,7 @@ From admin:
                 }
                 else
                 {
-                    return conversationWithName ?? Enumerable.Empty<(ChatMessage, string)>();
+                    return conversationWithName ?? Enumerable.Empty<IChatMessage>();
                 }
             }
 
@@ -135,16 +85,16 @@ From admin:
 
             if (conversationWithName == null)
             {
-                conversationWithName = Enumerable.Empty<(ChatMessage, string)>();
+                conversationWithName = Enumerable.Empty<IChatMessage>();
             }
 
 
             var agent = await this.SelectNextSpeakerAsync(conversationWithName) ?? this.admin;
-            ChatMessage? result = null;
-            var processedConversation = this.ProcessConversationForAgent(agent.Name, this.initializeMessages, conversationWithName);
+            IChatMessage? result = null;
+            var processedConversation = this.ProcessConversationForAgent(this.initializeMessages, conversationWithName);
             result = await agent.CallAsync(processedConversation) ?? throw new Exception("No result is returned.");
-            this.PrettyPrintMessage(result, agent.Name);
-            var updatedConversation = conversationWithName.Append((result, agent.Name));
+            this.PrettyPrintMessage(result);
+            var updatedConversation = conversationWithName.Append(result);
 
             // if message is terminate message, then terminate the conversation
             if (result?.IsGroupChatTerminateMessage() ?? false)
@@ -155,17 +105,16 @@ From admin:
             return await this.CallAsync(updatedConversation, maxRound - 1, throwExceptionWhenMaxRoundReached);
         }
 
-        public void PrettyPrintMessage(ChatMessage message, string name)
+        public void PrettyPrintMessage(IChatMessage message)
         {
-            var result = this.FormatMessage(message, name);
+            var result = this.FormatMessage(message);
             Console.WriteLine(result);
-            
         }
 
-        public string FormatMessage(ChatMessage message, string name)
+        public string FormatMessage(IChatMessage message)
         {
             // write result
-            var result = $"Message from {name}\n";
+            var result = $"Message from {message.From}\n";
             // write a seperator
             result += new string('-', 20) + "\n";
             result += message.Content + "\n";

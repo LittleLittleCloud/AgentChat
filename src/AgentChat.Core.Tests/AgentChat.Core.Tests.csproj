@@ -18,6 +18,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\AgentChat.DotnetInteractiveService\AgentChat.DotnetInteractiveFunction.csproj" />
+		<ProjectReference Include="..\AgentChat.Example.Share\AgentChat.Example.Share.csproj" />
 		<ProjectReference Include="..\AgentChat.SourceGenerator\AgentChat.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
 	</ItemGroup>
 

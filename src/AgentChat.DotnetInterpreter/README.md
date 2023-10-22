@@ -24,4 +24,4 @@ The built-in task is to print out the date today and the output should be the cu
 ## Limitations
 This example can't resolving a task if it requires multiple steps to complete. It also can't automatically fix the code if the code is not correct, which is quite common when using GPT to generate code that is not python.
 
-To enable LLM to resolve more complex tasks, or allow it to self-correct the code, we can introduce another llm which provides feedback to the current llm. For example, we can introduce a coder llm to write the code, and a runner llm to run the code and provide feedback to the coder llm. Such back-and-forth coding-debugging workflow is demonstrated in [coder-runner example](../GroupChatExample.CoderRunner/).
+To enable LLM to resolve more complex tasks, or allow it to self-correct the code, we can introduce another llm which provides feedback to the current llm. For example, we can introduce a coder llm to write the code, and a runner llm to run the code and provide feedback to the coder llm. Such back-and-forth coding-debugging workflow is demonstrated in [coder-runner example](../AgentChat.CoderRunner).

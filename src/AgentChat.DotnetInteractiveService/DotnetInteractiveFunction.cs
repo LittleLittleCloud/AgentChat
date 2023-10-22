@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using AgentChat.Core;
 
 namespace AgentChat.DotnetInteractiveService
 {
@@ -13,7 +12,6 @@ namespace AgentChat.DotnetInteractiveService
     {
         private readonly InteractiveService? _interactiveService = null;
         private string? _notebookPath;
-
 
         public DotnetInteractiveFunction(InteractiveService interactiveService, string? notebookPath = null, bool continueFromExistingNotebook = false)
         {
@@ -80,7 +78,7 @@ namespace AgentChat.DotnetInteractiveService
             if (result != null)
             {
                 // if result contains Error, return entire message
-                if (result.Contains("Error"))
+                if (result.StartsWith("Error:"))
                 {
                     return result;
                 }

@@ -1,23 +1,19 @@
 ﻿using Azure.AI.OpenAI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace AgentChat.Core
+namespace AgentChat.Example.Share
 {
     public class FixInvalidJsonFunctionWrapper
     {
-        private readonly OpenAIClient _client;
-        private readonly string _model;
+        private readonly IChatLLM chatLLM;
         private readonly Logger? logger;
 
-        public FixInvalidJsonFunctionWrapper(OpenAIClient client, string model, Logger? logger = null)
+        public FixInvalidJsonFunctionWrapper(IChatLLM chatLLM, Logger? logger = null)
         {
-            this._client = client;
-            this._model = model;
+            this.chatLLM = chatLLM;
             this.logger = logger;
         }
 
@@ -32,7 +28,7 @@ namespace AgentChat.Core
                 {
                     JsonSerializer.Deserialize<Dictionary<string, object>>(message);
                 }
-                catch(JsonException ex)
+                catch (JsonException ex)
                 {
                     isValidJson = false;
                     errorMessage = ex.Message;
@@ -49,26 +45,12 @@ Response example:
 {{
 // fixed json
 }}";
-                    var systemMessage = new ChatMessage
-                    {
-                        Role = ChatRole.System,
-                        Content = prompt,
-                    };
+                    var systemMessage = chatLLM.CreateChatMessage(ChatRole.System, prompt);
 
-                    var option = new ChatCompletionsOptions
-                    {
-                        Temperature = 0,
-                        MaxTokens = 1024,
-                    };
+                    var res = await this.chatLLM.GetChatCompletionsAsync(new[] { systemMessage }, 0, 1024);
+                    var completion = res.Message ?? throw new Exception("fail to generate json response");
 
-                    option.Messages.Add(systemMessage);
-
-                    var res = await _client.GetChatCompletionsAsync(_model, option);
-                    var completion = res.Value.Choices.First().Message;
-
-                    // print fixed json
-                    logger?.Log(completion.Content);
-                    message = completion.Content;
+                    message = completion.Content ?? throw new Exception("fail to generate json response");
                 }
 
                 var result = await func(message);

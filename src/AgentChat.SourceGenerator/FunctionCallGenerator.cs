@@ -12,7 +12,7 @@ namespace AgentChat.SourceGenerator
     [Generator]
     public partial class FunctionCallGenerator : IIncrementalGenerator
     {
-        private const string FUNCTION_CALL_ATTRIBUTION = "AgentChat.Core.FunctionAttribution";
+        private const string FUNCTION_CALL_ATTRIBUTION = "AgentChat.FunctionAttribution";
 
         public void Initialize(IncrementalGeneratorInitializationContext context)
         {

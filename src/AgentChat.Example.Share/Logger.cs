@@ -2,7 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace AgentChat.Core
+namespace AgentChat.Example.Share
 {
     public class Logger
     {

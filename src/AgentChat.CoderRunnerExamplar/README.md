@@ -1,6 +1,6 @@
 # GroupChat: coder, runner and examplar
 
-This example is an improved version of [GroupChat: coder and runner](../GroupChatExample.CoderRunner/README.md), it shows how to use a coder agent, a runner agent and an examplar agent on ML.Net related task, and is highlighted with the following feaures:
+This example is an improved version of [GroupChat: coder and runner](../AgentChat.CoderRunner/README.md), it shows how to use a coder agent, a runner agent and an examplar agent on ML.Net related task, and is highlighted with the following feaures:
 - Introduce RAG pattern to group chat using examplar agent. The examplar agent retrieves correct code snippet from [MLNET_TASK_101](https://github.com/LittleLittleCloud/MLNet-Task-101) and provides it to the coder agent for reference.
 - Introduce context management to group chat. By summarizing the context perioudically and only keeping the latest context in chat session, agents can focus on the most recent information and avoid being confused by outdated information. This feature also reduce the length of chat history and mitigate the token limit issue.
 - Notebook generation. a dotnet interactive notebook will be generated after the group chat, which includes all code snippets and can be used for further implemenation or debugging.

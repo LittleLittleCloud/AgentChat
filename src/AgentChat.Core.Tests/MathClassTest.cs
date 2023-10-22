@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using AgentChat.Example.Share;
+using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,14 +40,12 @@ Question #{question_index}:
 {message}";
         }
 
-        [ApiKeyFact]
+        [ApiKeyFact("AZURE_OPENAI_API_KEY")]
         public async Task MathChat_End_To_End_Test()
         {
-            var teacher = new GPTAgent(
-                Constant.GPT,
-                Constant.GPT_35_MODEL_ID,
-                "Teacher",
-                $@"You act as a preschool math teacher. Here's your workflow in pseudo code:
+            var teacher = Constant.GPT35.CreateAgent(
+                name: "Teacher",
+                roleInformation: $@"You act as a preschool math teacher. Here's your workflow in pseudo code:
 -workflow-
 create_math_question
 if answer is correct
@@ -55,17 +54,15 @@ else
     say 'try again'
 -end-
 ",
-                new Dictionary<Azure.AI.OpenAI.FunctionDefinition, Func<string, Task<string>>>
+                functionMap: new Dictionary<Azure.AI.OpenAI.FunctionDefinition, Func<string, Task<string>>>
                 {
                     { this.CreateMathQuestionFunction, this.CreateMathQuestionWrapper },
                     { this.AnswerIsCorrectFunction, this.AnswerIsCorrectWrapper },
                 });
 
-            var student = new GPTAgent(
-                Constant.AzureOpenAI,
-                Constant.GPT_35_MODEL_ID,
-                "Student",
-                $@"You act as a preschool student. Here's your workflow in pseudo code:
+            var student = Constant.GPT35.CreateAgent(
+                name: "Student",
+                roleInformation: $@"You act as a preschool student. Here's your workflow in pseudo code:
 -workflow-
 answer_question
 if answer is wrong
@@ -80,15 +77,15 @@ Here are a few examples of fix_answer:
 -example 1-
 sorry, the answer should be 2, not 3
 ",
-                new Dictionary<Azure.AI.OpenAI.FunctionDefinition, Func<string, Task<string>>>
+                functionMap: new Dictionary<Azure.AI.OpenAI.FunctionDefinition, Func<string, Task<string>>>
                 {
                     { this.AnswerQuestionFunction, this.AnswerQuestionWrapper }
                 });
-            var admin = new GPTAgent(
-                Constant.AzureOpenAI,
-                Constant.GPT_35_MODEL_ID,
-                "Admin",
-                $@"You act as an admin. Here's your workflow:
+
+            var groupChatFunction = new GroupChatFunction();
+            var admin = Constant.GPT35.CreateAgent(
+                name: "Admin",
+                roleInformation: $@"You act as an admin. Here's your workflow:
 -workflow-
 if number_of_resolved_question > 5:
     terminate_chat
@@ -103,11 +100,14 @@ terminate chat. good bye
 Here are a few examples of not_enough_question:
 -example 1-
 the number of resolved question is 0 and it's smaller than 5, please create a question
-");
+",
+                functionMap: new Dictionary<Azure.AI.OpenAI.FunctionDefinition, Func<string, Task<string>>>
+                {
+                    { groupChatFunction.TerminateGroupChatFunction, groupChatFunction.TerminateGroupChatWrapper },
+                });
 
             var group = new GroupChat(
-                Constant.AzureOpenAI,
-                Constant.GPT_35_MODEL_ID,
+                Constant.GPT35,
                 admin,
                 new[]
                 {
@@ -115,12 +115,10 @@ the number of resolved question is 0 and it's smaller than 5, please create a qu
                     student,
                 });
 
-            admin.FunctionMaps.Add(group.TerminateGroupChatFunction, group.TerminateGroupChatWrapper);
-
-            group.AddInitializeMessage($@"Welcome to the group chat!", admin.Name);
-            group.AddInitializeMessage($@"Hey I'm Teacher", teacher.Name);
-            group.AddInitializeMessage($@"Hey I'm Student", student.Name);
-            group.AddInitializeMessage(@$"Here's the workflow for this group chat:
+            admin.AddInitializeMessage($@"Welcome to the group chat!", group);
+            teacher.AddInitializeMessage($@"Hey I'm Teacher", group);
+            student.AddInitializeMessage($@"Hey I'm Student", group);
+            admin.AddInitializeMessage(@$"Here's the workflow for this group chat:
 -group chat workflow-
 number_of_resolved_question = 0
 while number_of_resolved_question < 5:
@@ -133,32 +131,32 @@ while number_of_resolved_question < 5:
         
 admin_terminate_chat
 -end-
-", admin.Name);
+", group);
             var chatHistory = await admin.SendMessageAsync("the number of resolved question is 0", group, 30, false);
 
             // print chat history
-            foreach ((var message, var name) in chatHistory)
+            foreach (var message in chatHistory)
             {
-                _output.WriteLine(group.FormatMessage(message, name));
+                _output.WriteLine(group.FormatMessage(message));
             }
 
             // check if there's five questions from teacher
-            chatHistory.Where(msg => msg.Item2 == teacher.Name && msg.Item1.Content.Contains("[MATH_QUESTION]"))
+            chatHistory.Where(msg => msg.From == teacher.Name && msg.Content?.Contains("[MATH_QUESTION]") is true)
                     .Count()
                     .Should().Be(5);
 
             // check if there's more than five answers from student (answer might be wrong)
-            chatHistory.Where(msg => msg.Item2 == student.Name && msg.Item1.Content.Contains("[MATH_ANSWER]"))
+            chatHistory.Where(msg => msg.From == student.Name && msg.Content?.Contains("[MATH_ANSWER]") is true)
                     .Count()
                     .Should().BeGreaterThanOrEqualTo(5);
 
             // check if there's five answer_is_correct from teacher
-            chatHistory.Where(msg => msg.Item2 == teacher.Name && msg.Item1.Content.Contains("[ANSWER_IS_CORRECT]"))
+            chatHistory.Where(msg => msg.From == teacher.Name && msg.Content?.Contains("[ANSWER_IS_CORRECT]") is true)
                     .Count()
                     .Should().Be(5);
 
             // check if there's terminate chat message from admin
-            chatHistory.Where(msg => msg.Item2 == admin.Name && msg.Item1.IsGroupChatTerminateMessage())
+            chatHistory.Where(msg => msg.From == admin.Name && msg.IsGroupChatTerminateMessage())
                     .Count()
                     .Should().Be(1);
         }

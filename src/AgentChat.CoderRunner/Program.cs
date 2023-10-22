@@ -1,9 +1,9 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using Azure.AI.OpenAI;
-using AgentChat.Core;
-using System.Reflection;
 using System.Text;
 using AgentChat.DotnetInteractiveService;
+using AgentChat.Example.Share;
+using AgentChat;
 
 var workDir = Path.Combine(Path.GetTempPath(), "InteractiveService");
 
@@ -16,21 +16,16 @@ if (Directory.Exists(workDir))
 // create workDir
 Directory.CreateDirectory(workDir);
 
-// set up openai client and model id to use.
-var model = Constant.GPT_35_MODEL_ID;
-var openAIClient = Constant.GPT;
 
 using var service = new InteractiveService(workDir);
 await service.StartAsync(workDir, default);
 var logger = new Logger(workDir);
 using var dotnetInteractiveFunction = new DotnetInteractiveFunction(service);
-var fixInvalidJsonFunction = new FixInvalidJsonFunctionWrapper(openAIClient, model);
+var fixInvalidJsonFunction = new FixInvalidJsonFunctionWrapper(Constant.GPT35);
 
-var coder = new GPTAgent(
-        openAIClient,
-        model,
-        "Coder",
-        @"You act as dotnet coder, you write dotnet script to resolve tasks.
+var coder = Constant.GPT35.CreateAgent(
+        name: "Coder",
+        roleInformation: @"You act as dotnet coder, you write dotnet script to resolve tasks.
 Here's the workflow you follow:
 -workflow-
 if no_current_step
@@ -72,11 +67,9 @@ xxx
 ```
 ");
 
-var runner = new GPTAgent(
-        openAIClient,
-        model,
-        "Runner",
-        @"You act as dotnet runner, you run dotnet script and install nuget packages. Here's the workflow you follow:
+var runner = Constant.GPT35.CreateAgent(
+        name: "Runner",
+        roleInformation: @"You act as dotnet runner, you run dotnet script and install nuget packages. Here's the workflow you follow:
 -workflow-
 if code_is_available_from_latest_message
     if nuget_packages_is_available_from_latest_message
@@ -95,17 +88,16 @@ Here are some examples for run_code_from_latest_message:
 Here are some examples for install_nuget_packages:
 - install_nuget_packages // nuget packages to install
 ",
-        new Dictionary<FunctionDefinition, Func<string, Task<string>>>
+        functionMap: new Dictionary<FunctionDefinition, Func<string, Task<string>>>
         {
             { dotnetInteractiveFunction.RunCodeFunction, fixInvalidJsonFunction.FixInvalidJsonWrapper(dotnetInteractiveFunction.RunCodeWrapper) },
             { dotnetInteractiveFunction.InstallNugetPackagesFunction, dotnetInteractiveFunction.InstallNugetPackagesWrapper },
         });
 
-var admin = new GPTAgent(
-    openAIClient,
-    model,
-    "Admin",
-    @"You act as group admin that lead other agents to resolve task together. Here's the workflow you follow:
+var groupChatFunction = new GroupChatFunction();
+var admin = Constant.GPT35.CreateAgent(
+    name: "Admin",
+    roleInformation: @"You act as group admin that lead other agents to resolve task together. Here's the workflow you follow:
 -workflow-
 if all_steps_are_resolved
     terminate_chat
@@ -122,11 +114,14 @@ The steps to resolve the task are:
 
 Here are some examples for resolve_step:
 - The step to resolve is xxx, let's work on this step.
-");
+",
+    functionMap: new Dictionary<FunctionDefinition, Func<string, Task<string>>>
+    {
+        { groupChatFunction.TerminateGroupChatFunction, groupChatFunction.TerminateGroupChatWrapper }
+    });
 
 var groupChat = new GroupChat(
-    openAIClient,
-    model,
+    Constant.GPT35,
     admin,
     new[]
     {
@@ -134,13 +129,11 @@ var groupChat = new GroupChat(
         runner,
     });
 
-admin.FunctionMaps.Add(groupChat.TerminateGroupChatFunction, groupChat.TerminateGroupChatWrapper);
-
-groupChat.AddInitializeMessage("Welcome to the group chat! Work together to resolve my task.", admin.Name);
-groupChat.AddInitializeMessage("Hey I'm Coder", coder.Name);
-groupChat.AddInitializeMessage("Hey I'm Runner", runner.Name);
-groupChat.AddInitializeMessage($"The link to mlnet repo is: https://github.com/dotnet/machinelearning. you don't need a token to use github pr api. Make sure to include a User-Agent header, otherwise github will reject it.", admin.Name);
-groupChat.AddInitializeMessage(@$"Here's the workflow for this group chat
+admin.AddInitializeMessage("Welcome to the group chat! Work together to resolve my task.", groupChat);
+coder.AddInitializeMessage("Hey I'm Coder", groupChat);
+runner.AddInitializeMessage("Hey I'm Runner", groupChat);
+admin.AddInitializeMessage($"The link to mlnet repo is: https://github.com/dotnet/machinelearning. you don't need a token to use github pr api. Make sure to include a User-Agent header, otherwise github will reject it.", groupChat);
+admin.AddInitializeMessage(@$"Here's the workflow for this group chat
 -groupchat workflow-
 if all_steps_are_resolved
     admin_terminate_chat
@@ -153,7 +146,7 @@ if code_is_correct
     admin_give_next_step
 else
     coder_fix_code_error
-", admin.Name);
+", groupChat);
 
 var conversation = await admin.SendMessageAsync("Here's the first step to resolve: Send a GET request to the GitHub API to retrieve the list of pull requests for the mlnet repo.", groupChat, 30, false);
 
@@ -161,9 +154,9 @@ var conversation = await admin.SendMessageAsync("Here's the first step to resolv
 if(conversation is not null)
 {
     var sb = new StringBuilder();
-    foreach(var (message, name) in conversation)
+    foreach(var message in conversation)
     {
-        var fmtMsg = groupChat.FormatMessage(message, name);
+        var fmtMsg = groupChat.FormatMessage(message);
         sb.AppendLine(fmtMsg);
     }
 
