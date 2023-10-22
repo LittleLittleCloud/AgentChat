@@ -116,7 +116,7 @@ var chatHistory = await heisenberg.SendMessagesAsync(
 `AgentChat` provides a source generator that generates `FunctionDefition` and wrapper caller according to the signature of a function. For more information, please check [Facilitate Chat FunctionCall for GPT-series model](./src/AgentChat.Core/README.md#facilitate-chat-functioncall-for-gpt-series-model).
 
 ## Notebook Examples
-You can find notebook examples from [here](./notebooks/).
+You can find notebook examples from [here](./notebook/).
 
 ## More Examples
 You can find more examples from below table.
