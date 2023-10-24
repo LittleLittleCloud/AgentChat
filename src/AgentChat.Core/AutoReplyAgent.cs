@@ -44,7 +44,6 @@ namespace AgentChat
         /// Then the agent will be called to generate the reply message.
         /// And finally, the reply message will be postprocessed by passing through all the postprocess functions from <see cref="AutoReplyAgent._postProcessFuncs"/>.
         /// </summary>
-        /// <exception cref="ArgumentException">throw when the name of the auto reply message doesn't match with the agent name</exception>
         public async Task<IChatMessage> CallAsync(IEnumerable<IChatMessage> conversation, System.Threading.CancellationToken ct = default)
         {
             // first, try auto reply
@@ -53,11 +52,6 @@ namespace AgentChat
                 var autoReplyMessage = await autoReplyMessageFunc(conversation);
                 if (autoReplyMessage != null)
                 {
-                    // check if name match
-                    if (autoReplyMessage.From != _agent.Name)
-                    {
-                        throw new ArgumentException("name doesn't match with agent name", nameof(autoReplyMessage));
-                    }
 
                     return autoReplyMessage;
                 }

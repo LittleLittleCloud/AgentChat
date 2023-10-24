@@ -2,13 +2,13 @@
 
   <PropertyGroup>
     <Description>Helper package for AgentChat examples and notebooks</Description>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AgentChat.Core\AgentChat.Core.csproj" />
     <ProjectReference Include="..\AgentChat.GPT\AgentChat.GPT.csproj" />
-	<PackageReference Include="Microsoft.DotNet.Interactive"
+	<PackageReference Include="Microsoft.DotNet.Interactive.VisualStudio"
 						Version="$(MicrosoftDotnetInteractive)" />
   </ItemGroup>
 

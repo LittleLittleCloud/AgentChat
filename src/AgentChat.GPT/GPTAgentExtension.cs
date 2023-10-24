@@ -67,7 +67,7 @@ round # {i++}";
             }
         }
 
-        public static async Task<IEnumerable<IChatMessage>> SendMessageAsync(
+        public static async Task<IEnumerable<IChatMessage>> SendMessageToGroupAsync(
             this GPTAgent agent,
             string msg,
             GroupChat groupChat,
@@ -84,7 +84,7 @@ round # {i++}";
             return await groupChat.CallAsync(new[] { gptMessage }, maxRound, throwWhenMaxRoundReached);
         }
 
-        public static async Task<IEnumerable<IChatMessage>> SendMessageAsync(
+        public static async Task<IEnumerable<IChatMessage>> SendMessageToAgentAsync(
             this GPTAgent agent,
             IAgent receiver,
             string msg,

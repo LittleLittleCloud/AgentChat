@@ -10,7 +10,6 @@
 		<PackageReference Include="Microsoft.DotNet.Interactive.VisualStudio" Version="$(MicrosoftDotnetInteractive)" />
 	</ItemGroup>
 
-
 	<ItemGroup>
 	  <EmbeddedResource Include="dotnet-tools.json" />
 	  <EmbeddedResource Include="RestoreInteractive.config" />

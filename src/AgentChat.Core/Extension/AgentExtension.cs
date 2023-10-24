@@ -64,7 +64,6 @@ namespace AgentChat
 
         /// <summary>
         /// Add auto reply message to the agent. If the conversation matches the condition, the auto reply message will be sent as reply. Otherwise, the agent will be called to generate the reply message.
-        /// The <see cref="IChatMessage.From"/> of the auto reply message must be the same as the <see cref="IAgent.Name"/> of the agent. Otherwise, an exception will be thrown.
         /// Multiple auto reply messages can be added to the agent.
         /// And the auto reply messages will be called in the order they are added.
         /// </summary>
