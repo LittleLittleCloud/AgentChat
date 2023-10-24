@@ -9,6 +9,6 @@
         <FluentAssertionVersion>6.8.0</FluentAssertionVersion>
         <XUnitVersion>2.4.2</XUnitVersion>
         <MicrosoftNETTestSdkVersion>17.7.0</MicrosoftNETTestSdkVersion>
-        <MicrosoftDotnetInteractive>1.0.0-beta.23328.2</MicrosoftDotnetInteractive>
+        <MicrosoftDotnetInteractive>1.0.0-beta.23523.2</MicrosoftDotnetInteractive>
     </PropertyGroup>
 </Project>
