@@ -8,11 +8,9 @@ namespace AgentChat.Core.Tests
     public class AutoReplyAgentTest
     {
         [Fact]
-        public async Task GPTAgentWithOneAutoreplyAsyncTest()
+        public async Task AutoReplyAsyncTest()
         {
-            IAgent alice = Constant.GPT35.CreateAgent(
-                name: "Alice",
-                roleInformation: $@"You are a helpful AI assistant")
+            IAgent alice = new EchoAgent("Alice")
                 .WithAutoReply((conversations) => Constant.GPT35.CreateChatMessage(ChatRole.Assistant, "I'm your father", from: "Alice"));
 
             var msg = Constant.GPT35.CreateChatMessage(ChatRole.User, "hey", from: "Bob");
@@ -23,11 +21,9 @@ namespace AgentChat.Core.Tests
         }
 
         [Fact]
-        public async Task GPTAgentWithMultipleAutoReplyAsyncTest()
+        public async Task MultipleAutoReplyAsyncTest()
         {
-            IAgent alice = Constant.GPT35.CreateAgent(
-               name: "Alice",
-               roleInformation: $@"You are a helpful AI assistant")
+            IAgent alice = new EchoAgent("Alice")
                .WithAutoReply((conversations) =>
                {
                    if (conversations.Count() == 1)
