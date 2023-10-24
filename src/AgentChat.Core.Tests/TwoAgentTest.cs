@@ -31,7 +31,7 @@ namespace AgentChat.Core.Tests
                     { this.SayNameFunction, this.SayNameWrapper },
                 });
 
-            var msgs = await alice.SendMessageAsync(bob, "hey what's your name", maxRound: 1);
+            var msgs = await alice.SendMessageToAgentAsync(bob, "hey what's your name", maxRound: 1);
 
             msgs.Should().HaveCount(2);
             msgs.First().Content.Should().Be("hey what's your name");

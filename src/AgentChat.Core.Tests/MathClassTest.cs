@@ -132,7 +132,7 @@ while number_of_resolved_question < 5:
 admin_terminate_chat
 -end-
 ", group);
-            var chatHistory = await admin.SendMessageAsync("the number of resolved question is 0", group, 30, false);
+            var chatHistory = await admin.SendMessageToGroupAsync("the number of resolved question is 0", group, 30, false);
 
             // print chat history
             foreach (var message in chatHistory)

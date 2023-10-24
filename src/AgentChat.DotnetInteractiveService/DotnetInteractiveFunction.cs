@@ -12,11 +12,14 @@ namespace AgentChat.DotnetInteractiveService
     {
         private readonly InteractiveService? _interactiveService = null;
         private string? _notebookPath;
+        private readonly KernelInfoCollection _kernelInfoCollection = new KernelInfoCollection();
 
         public DotnetInteractiveFunction(InteractiveService interactiveService, string? notebookPath = null, bool continueFromExistingNotebook = false)
         {
             this._interactiveService = interactiveService;
             this._notebookPath = notebookPath;
+            this._kernelInfoCollection.Add(new KernelInfo("csharp"));
+            this._kernelInfoCollection.Add(new KernelInfo("markdown"));
 
             if (this._notebookPath != null)
             {
@@ -31,7 +34,7 @@ namespace AgentChat.DotnetInteractiveService
                     var document = new InteractiveDocument();
 
                     using var stream = File.OpenWrite(_notebookPath);
-                    Notebook.Write(document, stream);
+                    Notebook.Write(document, stream, this._kernelInfoCollection);
                     stream.Flush();
                     stream.Dispose();
                 }
@@ -39,7 +42,7 @@ namespace AgentChat.DotnetInteractiveService
                 {
                     // load existing notebook
                     using var readStream = File.OpenRead(this._notebookPath);
-                    var document = Notebook.ReadAsync(readStream).Result;
+                    var document = Notebook.Read(readStream, this._kernelInfoCollection);
                     foreach(var cell in document.Elements)
                     {
                         if (cell.KernelName == "csharp")
@@ -55,7 +58,7 @@ namespace AgentChat.DotnetInteractiveService
                     var document = new InteractiveDocument();
 
                     using var stream = File.OpenWrite(_notebookPath);
-                    Notebook.Write(document, stream);
+                    Notebook.Write(document, stream, this._kernelInfoCollection);
                     stream.Flush();
                     stream.Dispose();
                 }
@@ -150,12 +153,12 @@ namespace AgentChat.DotnetInteractiveService
             if (!File.Exists(this._notebookPath))
             {
                 using var stream = File.OpenWrite(this._notebookPath);
-                Notebook.Write(new InteractiveDocument(), stream);
+                Notebook.Write(new InteractiveDocument(), stream, this._kernelInfoCollection);
                 stream.Dispose();
             }
 
             using var readStream = File.OpenRead(this._notebookPath);
-            var document = await Notebook.ReadAsync(readStream);
+            var document = Notebook.Read(readStream, this._kernelInfoCollection);
             readStream.Dispose();
 
             var cell = new InteractiveDocumentElement(cellContent, kernelName);
@@ -163,7 +166,7 @@ namespace AgentChat.DotnetInteractiveService
             document.Add(cell);
 
             using var writeStream = File.OpenWrite(this._notebookPath);
-            Notebook.Write(document, writeStream);
+            Notebook.Write(document, writeStream, this._kernelInfoCollection);
             // sleep 3 seconds
             await Task.Delay(3000);
             writeStream.Flush();
