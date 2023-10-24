@@ -1,4 +1,5 @@
-﻿using Azure.AI.OpenAI;
+﻿using AgentChat;
+using Azure.AI.OpenAI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace AgentChat
 {
     public static class AgentExtension
     {
-        public static async Task<IEnumerable<IChatMessage>> SendMessageAsync(
+        public static async Task<IEnumerable<IChatMessage>> SendMessageToGroupAsync(
             this IAgent agent,
             IChatMessage msg,
             GroupChat groupChat,
@@ -36,10 +37,19 @@ namespace AgentChat
                 return await agent.CallAsync(Enumerable.Empty<IChatMessage>(), ct);
             }
 
-            return await agent.CallAsync(new[] { msg }, ct);
+            return await agent.SendMessageAsync(new[] { msg }, ct);
         }
 
-        public static async Task<IEnumerable<IChatMessage>> SendMessageAsync(
+        public static async Task<IChatMessage> SendMessageAsync(
+            this IAgent agent,
+            IEnumerable<IChatMessage> msg,
+            CancellationToken ct = default)
+        {
+
+            return await agent.CallAsync(msg, ct);
+        }
+
+        public static async Task<IEnumerable<IChatMessage>> SendMessageToAgentAsync(
             this IAgent agent,
             IAgent receiver,
             IEnumerable<IChatMessage>? chatHistory = null,
@@ -50,6 +60,120 @@ namespace AgentChat
             var groupChat = new SequentialGroupChat(new[] { agent, receiver });
 
             return await groupChat.CallAsync(chatHistory, maxRound, throwWhenMaxRoundReached);
+        }
+
+        /// <summary>
+        /// Add auto reply message to the agent. If the conversation matches the condition, the auto reply message will be sent as reply. Otherwise, the agent will be called to generate the reply message.
+        /// The <see cref="IChatMessage.From"/> of the auto reply message must be the same as the <see cref="IAgent.Name"/> of the agent. Otherwise, an exception will be thrown.
+        /// Multiple auto reply messages can be added to the agent.
+        /// And the auto reply messages will be called in the order they are added.
+        /// </summary>
+        /// <param name="agent">agent to add auto reply</param>
+        /// <param name="autoReplyMessageFunc">function to determine the auto reply message.
+        /// If the function returns a message, that message will be sent as auto reply.
+        /// If the function returns null, the <paramref name="agent"/> will be called to generate the reply message.</param>
+        public static IAgent WithAutoReply(
+            this IAgent agent,
+            Func<IEnumerable<IChatMessage>, IChatMessage?> autoReplyMessageFunc)
+        {
+            var func = new Func<IEnumerable<IChatMessage>, Task<IChatMessage?>>(x => Task.FromResult(autoReplyMessageFunc(x)));
+            
+            return WithAutoReply(agent, func);
+        }
+
+        /// <inheritdoc cref="WithAutoReply(IAgent, Func{IEnumerable{IChatMessage}, IChatMessage?})"/>
+        public static IAgent WithAutoReply(
+            this IAgent agent,
+            Func<IEnumerable<IChatMessage>, Task<IChatMessage?>> autoReplyMessageFunc)
+        {
+            if (agent is AutoReplyAgent autoReply)
+            {
+                autoReply.AddAutoReplyMessage(autoReplyMessageFunc);
+
+                return autoReply;
+            }
+            else
+            {
+                var newAgent = new AutoReplyAgent(agent);
+                newAgent.AddAutoReplyMessage(autoReplyMessageFunc);
+
+                return newAgent;
+            }
+        }
+
+        /// <inheritdoc cref="WithPreprocess(IAgent, Func{IEnumerable{IChatMessage}, Task{IEnumerable{IChatMessage}}})"/>
+        public static IAgent WithPreprocess(
+            this IAgent agent,
+            Func<IEnumerable<IChatMessage>, IEnumerable<IChatMessage>> preprocessFunc)
+        {
+            var func = new Func<IEnumerable<IChatMessage>, Task<IEnumerable<IChatMessage>>>(x => Task.FromResult(preprocessFunc(x)));
+
+            return agent.WithPreprocess(func);
+        }
+
+        /// <summary>
+        /// Add preprocess function to the agent.
+        /// The preprocess function will be called before calling the agent to generate the reply message and after no auto reply is available.
+        /// Multiple preprocess functions can be added to the agent.
+        /// And the preprocess functions will be called in the order they are added.
+        /// </summary>
+        /// <param name="agent">The agent to add preprocess function</param>
+        /// <param name="preprocessFunc">preprocess function to be added</param>
+        public static IAgent WithPreprocess(
+            this IAgent agent,
+            Func<IEnumerable<IChatMessage>, Task<IEnumerable<IChatMessage>>> preprocessFunc)
+        {
+            if (agent is AutoReplyAgent autoReply)
+            {
+                autoReply.AddPreProcess(preprocessFunc);
+
+                return autoReply;
+            }
+            else
+            {
+                var newAgent = new AutoReplyAgent(agent);
+                newAgent.AddPreProcess(preprocessFunc);
+
+                return newAgent;
+            }
+        }
+
+        /// <inheritdoc cref="WithPostprocess(IAgent, Func{IChatMessage, Task{IChatMessage}})"/>
+        public static IAgent WithPostprocess(
+            this IAgent agent,
+            Func<IChatMessage, IChatMessage> postprocessFunc)
+        {
+            var func = new Func<IChatMessage, Task<IChatMessage>>(x => Task.FromResult(postprocessFunc(x)));
+
+            return agent.WithPostprocess(func);
+        }
+
+        /// <summary>
+        /// Add postprocess function to the agent.
+        /// The postprocess function will be called after the agent generate the reply message.
+        /// Multiple postprocess functions can be added to the agent.
+        /// And the postprocess functions will be called in the order they are added.
+        /// </summary>
+        /// <param name="agent"></param>
+        /// <param name="postprocessFunc"></param>
+        /// <returns></returns>
+        public static IAgent WithPostprocess(
+            this IAgent agent,
+            Func<IChatMessage, Task<IChatMessage>> postprocessFunc)
+        {
+            if (agent is AutoReplyAgent autoReply)
+            {
+                autoReply.AddPostProcess(postprocessFunc);
+
+                return autoReply;
+            }
+            else
+            {
+                var newAgent = new AutoReplyAgent(agent);
+                newAgent.AddPostProcess(postprocessFunc);
+
+                return newAgent;
+            }
         }
     }
 }

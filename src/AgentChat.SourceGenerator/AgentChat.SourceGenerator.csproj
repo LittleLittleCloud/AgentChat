@@ -2,13 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-	  <IncludeBuildOutput>false</IncludeBuildOutput>
-	  <!-- Do not include the generator as a lib dependency -->
-	  <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	  <!-- Do not include the generator as a lib dependency -->
+	<IncludeBuildOutput>false</IncludeBuildOutput>
+	<!-- Do not include the generator as a lib dependency -->
+	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	<!-- Do not include the generator as a lib dependency -->
     <UserSecretsId>35954224-b94e-4024-b0ef-7ba7cf80c0d8</UserSecretsId>
-	  <LaunchDebugger>false</LaunchDebugger>
-	  <DefineConstants Condition="'$(LaunchDebugger)' == 'true'">$(DefineConstants);LAUNCH_DEBUGGER</DefineConstants>
+	<GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+	<LaunchDebugger>false</LaunchDebugger>
+	<DefineConstants Condition="'$(LaunchDebugger)' == 'true'">$(DefineConstants);LAUNCH_DEBUGGER</DefineConstants>
   </PropertyGroup>
 
 	<PropertyGroup>
@@ -18,15 +19,27 @@
 	<ItemGroup>
 		<PackageReference Include="System.CodeDom" Version="$(SystemCodeDomVersion)" />
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(MicrosoftCodeAnalysisVersion)" PrivateAssets="all" GeneratePathProperty="True" />
-		<PackageReference Include="System.Text.Json" Version="7.0.3">
-			<PrivateAssets>all</PrivateAssets>
-		</PackageReference>
+		<PackageReference Include="Newtonsoft.Json"
+						  PrivateAssets="all"
+						  Version="12.0.1"
+						  GeneratePathProperty="true" />
 	</ItemGroup>
 
 
 	<ItemGroup>
 		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\*.dll"
+			  Pack="true"
+			  PackagePath="analyzers/dotnet/cs"
+			  Visible="false" />
 	</ItemGroup>
+
+	<Target Name="GetDependencyTargetPaths">
+		<ItemGroup>
+			<TargetPathWithTargetPlatformMoniker Include="$(PkgNewtonsoft_Json)\lib\netstandard2.0\*.dll"
+												 IncludeRuntimeDependency="false" />
+		</ItemGroup>
+	</Target>
 
 	<ItemGroup>
 	  <None Update="Template\FunctionCallTemplate.tt">
@@ -46,5 +59,4 @@
 	    <DependentUpon>FunctionCallTemplate.tt</DependentUpon>
 	  </Compile>
 	</ItemGroup>
-
 </Project>
