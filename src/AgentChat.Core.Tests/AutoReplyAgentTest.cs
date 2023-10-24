@@ -11,9 +11,9 @@ namespace AgentChat.Core.Tests
         public async Task AutoReplyAsyncTest()
         {
             IAgent alice = new EchoAgent("Alice")
-                .WithAutoReply((conversations) => Constant.GPT35.CreateChatMessage(ChatRole.Assistant, "I'm your father", from: "Alice"));
+                .WithAutoReply((conversations) => new Message(ChatRole.Assistant, "I'm your father", from: "Alice"));
 
-            var msg = Constant.GPT35.CreateChatMessage(ChatRole.User, "hey", from: "Bob");
+            var msg = new Message(ChatRole.User, "hey", from: "Bob");
             var reply = await alice.SendMessageAsync(msg);
             reply.From.Should().Be("Alice");
             reply.Content.Should().Be("I'm your father");
@@ -28,17 +28,17 @@ namespace AgentChat.Core.Tests
                {
                    if (conversations.Count() == 1)
                    {
-                       return Constant.GPT35.CreateChatMessage(ChatRole.Assistant, "I'm your father", from: "Alice");
+                       return new Message(ChatRole.Assistant, "I'm your father", from: "Alice");
                    }
 
                    return null;
                })
                .WithAutoReply((conversations) =>
                {
-                   return Constant.GPT35.CreateChatMessage(ChatRole.Assistant, "HaHa kidding", from: "Alice");
+                   return new Message(ChatRole.Assistant, "HaHa kidding", from: "Alice");
                });
 
-            var msg = Constant.GPT35.CreateChatMessage(ChatRole.User, "hey", from: "Bob");
+            var msg = new Message(ChatRole.User, "hey", from: "Bob");
             var reply = await alice.SendMessageAsync(msg);
             reply.From.Should().Be("Alice");
             reply.Content.Should().Be("I'm your father");
