@@ -101,7 +101,7 @@ round # {i++}";
 
             chatHistory = chatHistory?.Append(gptMessage) ?? new[] { gptMessage };
 
-            return await agent.SendMessageAsync(receiver, chatHistory, maxRound, throwWhenMaxRoundReached, ct);
+            return await agent.SendMessageToAgentAsync(receiver, chatHistory, maxRound, throwWhenMaxRoundReached, ct);
         }
 
         public static async Task<IChatMessage> SendMessageAsync(

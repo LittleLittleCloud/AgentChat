@@ -18,4 +18,30 @@ namespace AgentChat
 
         string? From { get; }
     }
+
+    /// <summary>
+    /// A universal chat message that can be used by different chat models.
+    /// </summary>
+    public class Message : IChatMessage
+    {
+        public Message(
+            ChatRole role,
+            string? content = null,
+            string? name = null,
+            string? from = null)
+        {
+            Role = role;
+            Content = content;
+            Name = name;
+            From = from;
+        }
+
+        public ChatRole Role { get; }
+
+        public string? Content { get; }
+
+        public string? Name { get; }
+
+        public string? From { get; }
+    }
 }
