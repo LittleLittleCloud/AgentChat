@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AgentChat.Core
+namespace AgentChat
 {
     /// <summary>
     /// An agent that takes user input and send it to the chat model.
