@@ -8,7 +8,7 @@ namespace AgentChat
     /// <summary>
     /// Agent that auto reply a message if the conversation matches the condition.
     /// </summary>
-    internal class AutoReplyAgent : IAgent
+    public class AutoReplyAgent : IAgent
     {
         private readonly IAgent _agent;
         private readonly List<Func<IEnumerable<IChatMessage>, Task<IChatMessage?>>> _autoReplyMessageFuncs = new List<Func<IEnumerable<IChatMessage>, Task<IChatMessage?>>>();
