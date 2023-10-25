@@ -69,50 +69,19 @@ round # {i++}";
 
         public static async Task<IEnumerable<IChatMessage>> SendMessageToGroupAsync(
             this GPTAgent agent,
-            string msg,
             GroupChat groupChat,
-            int maxRound = 10,
-            bool throwWhenMaxRoundReached = true,
-            CancellationToken ct = default)
-        {
-            var chatMessage = new ChatMessage(ChatRole.User, msg);
-            var gptMessage = new GPTChatMessage(chatMessage)
-            {
-                From = agent.Name,
-            };
-
-            return await groupChat.CallAsync(new[] { gptMessage }, maxRound, throwWhenMaxRoundReached);
-        }
-
-        public static async Task<IEnumerable<IChatMessage>> SendMessageToAgentAsync(
-            this GPTAgent agent,
-            IAgent receiver,
             string msg,
-            IEnumerable<IChatMessage>? chatHistory = null,
             int maxRound = 10,
             bool throwWhenMaxRoundReached = false,
             CancellationToken ct = default)
         {
-            var chatMessage = new ChatMessage(ChatRole.Assistant, msg);
+            var chatMessage = new ChatMessage(ChatRole.User, msg);
             var gptMessage = new GPTChatMessage(chatMessage)
             {
                 From = agent.Name,
             };
 
-            chatHistory = chatHistory?.Append(gptMessage) ?? new[] { gptMessage };
-
-            return await agent.SendMessageToAgentAsync(receiver, chatHistory, maxRound, throwWhenMaxRoundReached, ct);
-        }
-
-        public static async Task<IChatMessage> SendMessageAsync(
-            this GPTAgent agent,
-            string msg,
-            CancellationToken ct = default)
-        {
-            var chatMessage = new ChatMessage(ChatRole.User, msg);
-            var gptMessage = new GPTChatMessage(chatMessage);
-
-            return await agent.CallAsync(new[] { gptMessage }, ct);
+            return await agent.SendMessageToGroupAsync(groupChat, gptMessage, maxRound, throwWhenMaxRoundReached, ct);
         }
 
         public static GPTAgent CreateAgent(
