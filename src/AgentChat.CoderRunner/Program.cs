@@ -148,7 +148,7 @@ else
     coder_fix_code_error
 ", groupChat);
 
-var conversation = await admin.SendMessageToGroupAsync("Here's the first step to resolve: Send a GET request to the GitHub API to retrieve the list of pull requests for the mlnet repo.", groupChat, 30, false);
+var conversation = await admin.SendMessageToGroupAsync(groupChat, "Here's the first step to resolve: Send a GET request to the GitHub API to retrieve the list of pull requests for the mlnet repo.", 30, false);
 
 // log conversation to chat_history.txt
 if(conversation is not null)
