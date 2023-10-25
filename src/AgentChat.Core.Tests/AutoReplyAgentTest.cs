@@ -99,25 +99,5 @@ namespace AgentChat.Core.Tests
             reply.Content.Should().Be("hello");
             reply.From.Should().Be("echo");
         }
-
-
-
-        private class EchoAgent : IAgent
-        {
-            public EchoAgent(string name)
-            {
-                Name = name;
-            }
-            public string Name { get; }
-
-            public Task<IChatMessage> CallAsync(IEnumerable<IChatMessage> conversation, CancellationToken ct = default)
-            {
-                // return the most recent message
-                var lastMessage = conversation.LastOrDefault();
-                var reply = new Message(ChatRole.Assistant, lastMessage?.Content, null, Name);
-
-                return Task.FromResult<IChatMessage>(reply);
-            }
-        }
     }
 }

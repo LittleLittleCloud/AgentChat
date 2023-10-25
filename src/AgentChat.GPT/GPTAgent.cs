@@ -37,7 +37,7 @@ namespace AgentChat
 
         public IEnumerable<GPTChatMessage> CreateSystemMessages()
         {
-            var systemMessage = new ChatMessage(ChatRole.System, $"You are {this.Name}, {this._roleInformation}");
+            var systemMessage = new ChatMessage(ChatRole.System, $"Your name is {this.Name}, {this._roleInformation}");
 
             return new GPTChatMessage[]
             {

@@ -8,8 +8,6 @@
   <ItemGroup>
     <ProjectReference Include="..\AgentChat.Core\AgentChat.Core.csproj" />
     <ProjectReference Include="..\AgentChat.GPT\AgentChat.GPT.csproj" />
-	<PackageReference Include="Microsoft.DotNet.Interactive.VisualStudio"
-						Version="$(MicrosoftDotnetInteractive)" />
   </ItemGroup>
 
 </Project>
