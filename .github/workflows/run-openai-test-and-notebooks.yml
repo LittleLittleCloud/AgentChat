@@ -1,12 +1,8 @@
-name: nightly-build
+name: run-openai-test-and-notebooks
 
 on:
-  workflow_run:
-    workflows:
-      - 'run-openai-test-and-notebooks'
-    types:
-      - completed
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  push:
+    branches: [ "main" ]
 env:
   BUILD_CONFIGURATION: Release    # set this to the appropriate build configuration
 
@@ -23,9 +19,16 @@ jobs:
 
     - name: Restore dependencies
       run: dotnet restore
+    - name: Restore tool
+      run: dotnet tool restore
     - name: Build
       run: dotnet build --no-restore -p:VersionSuffix=$GITHUB_RUN_ID --configuration '${{ env.BUILD_CONFIGURATION }}'
     - name: Pack
       run: dotnet pack --no-restore -p:VersionSuffix=$GITHUB_RUN_ID --no-build --configuration '${{ env.BUILD_CONFIGURATION }}' --output ./artifacts
-    - name: Publish to MyGet
-      run: dotnet nuget push --source myget --api-key ${{ secrets.MYGET_API_KEY }} ./artifacts/*.nupkg --skip-duplicate
+    - name: run all tests
+      run: dotnet test --no-restore --no-build --configuration '${{ env.BUILD_CONFIGURATION }}'
+    - name: Perform a Pester test from the .tools/run_all_notebooks.ps1
+      shell: pwsh
+      run: |
+        Invoke-Pester .tools/run_all_notebooks.ps1 -Passthru
+      
