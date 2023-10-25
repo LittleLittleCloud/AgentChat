@@ -57,7 +57,7 @@ According to MLNet reference, the error is caused by xxx. Here's the fix code
 I don't know how to fix this error as MLNet reference is not helpful.
 -----
 ");
-            var response = await agent.SendMessageAsync(null);
+            var response = await agent.SendMessageAsync();
 
             if (response is null || response.Content is null)
             {
