@@ -61,9 +61,4 @@ foreach ($notebook in $failNotebooks) {
     Write-Host $notebook
 }
 
-
-Describe "Run all notebooks" {
-    It "should run all notebooks successfully" {
-        $failNotebooks | Should -BeNullOrEmpty
-    }
-}
+$failNotebooks | Should -BeNullOrEmpty
