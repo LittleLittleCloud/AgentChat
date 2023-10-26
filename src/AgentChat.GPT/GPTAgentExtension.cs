@@ -72,22 +72,6 @@ round # {i++}";
             }
         }
 
-        public static async Task<IEnumerable<IChatMessage>> SendMessageToGroupAsync(
-            this GPTAgent agent,
-            GroupChat groupChat,
-            string msg,
-            int maxRound = 10,
-            bool throwWhenMaxRoundReached = false,
-            CancellationToken ct = default)
-        {
-            var chatMessage = new ChatMessage(ChatRole.User, msg);
-            var gptMessage = new GPTChatMessage(chatMessage)
-            {
-                From = agent.Name,
-            };
-
-            return await agent.SendMessageToGroupAsync(groupChat, gptMessage, maxRound, throwWhenMaxRoundReached, ct);
-        }
 
         public static GPTAgent CreateAgent(
             this GPT gpt,
@@ -112,15 +96,6 @@ round # {i++}";
                 functionMap);
         }
 
-        public static void AddInitializeMessage(this GPTAgent agent, string message, GroupChat groupChat)
-        {
-            var messageToAdd = new ChatMessage(ChatRole.User, message);
-            var gptMessage = new GPTChatMessage(messageToAdd)
-            {
-                From = agent.Name,
-            };
 
-            groupChat.AddInitializeMessage(gptMessage);
-        }
     }
 }

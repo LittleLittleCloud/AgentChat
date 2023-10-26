@@ -9,7 +9,7 @@ env:
 
 jobs:
   build:
-    name: nightly-build
+    name: run-openai-test-and-notebooks
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -28,12 +28,16 @@ jobs:
       run: dotnet pack --no-restore -p:VersionSuffix=$GITHUB_RUN_ID --no-build --configuration '${{ env.BUILD_CONFIGURATION }}' --output ./artifacts
     - name: run all tests
       run: dotnet test --no-restore --no-build --configuration '${{ env.BUILD_CONFIGURATION }}'
+      env:
+        AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+        AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+        AZURE_GPT_35_MODEL_ID: ${{ secrets.AZURE_GPT_35_MODEL_ID }}
     - name: Add local feed
       run: dotnet nuget add source --name local artifacts --configfile NuGet.config
     - name: Perform a Pester test from the .tools/run_all_notebooks.ps1
       shell: pwsh
       run: |
-        Invoke-Pester .tools/run_all_notebooks.ps1 -Passthru
+        Invoke-Pester .tools/run_all_notebook.ps1 -Passthru
       env:
         AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
         AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}

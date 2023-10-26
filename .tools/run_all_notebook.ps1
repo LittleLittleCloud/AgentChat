@@ -61,4 +61,4 @@ foreach ($notebook in $failNotebooks) {
     Write-Host $notebook
 }
 
-exit $exitCode
+$failNotebooks | Should -BeNullOrEmpty
