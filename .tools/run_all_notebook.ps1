@@ -64,6 +64,6 @@ foreach ($notebook in $failNotebooks) {
 
 Describe "Run all notebooks" {
     It "should run all notebooks successfully" {
-        $exitCode | Should -Be 0
+        $failNotebooks | Should -BeNullOrEmpty
     }
 }
