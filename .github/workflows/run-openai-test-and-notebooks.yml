@@ -39,7 +39,7 @@ jobs:
     - name: Perform a Pester test from the .tools/run_all_notebooks.ps1
       shell: pwsh
       run: |
-        Invoke-Pester .tools/run_all_notebooks.ps1 -Passthru
+        Invoke-Pester .tools/run_all_notebook.ps1 -Passthru
       env:
         AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
         AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}

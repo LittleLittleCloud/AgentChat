@@ -61,4 +61,9 @@ foreach ($notebook in $failNotebooks) {
     Write-Host $notebook
 }
 
-exit $exitCode
+
+Describe "Run all notebooks" {
+    It "should run all notebooks successfully" {
+        $exitCode | Should -Be 0
+    }
+}
