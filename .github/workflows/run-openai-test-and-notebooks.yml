@@ -1,6 +1,7 @@
 name: run-openai-test-and-notebooks
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
 env:
@@ -31,4 +32,8 @@ jobs:
       shell: pwsh
       run: |
         Invoke-Pester .tools/run_all_notebooks.ps1 -Passthru
+      env:
+        AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+        AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+        AZURE_GPT_35_MODEL_ID: ${{ secrets.AZURE_GPT_35_MODEL_ID }}
       
