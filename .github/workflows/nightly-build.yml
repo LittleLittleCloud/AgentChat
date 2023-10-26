@@ -6,13 +6,13 @@ on:
       - 'run-openai-test-and-notebooks'
     types:
       - completed
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 env:
   BUILD_CONFIGURATION: Release    # set this to the appropriate build configuration
 
 jobs:
   build:
     name: nightly-build
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
