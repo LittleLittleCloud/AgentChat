@@ -39,7 +39,7 @@ namespace AgentChat
             string msg,
             CancellationToken ct = default)
         {
-            var userMessage = new Message(ChatRole.User, msg, from: agent.Name);
+            var userMessage = new Message(ChatRole.User, msg);
 
             return await agent.SendMessageAsync(userMessage, ct);
         }
@@ -59,7 +59,6 @@ namespace AgentChat
             IEnumerable<IChatMessage> history,
             CancellationToken ct = default)
         {
-
             return await agent.CallAsync(history, ct);
         }
 

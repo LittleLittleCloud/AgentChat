@@ -62,7 +62,12 @@ round # {i++}";
                 }
                 else
                 {
-                    throw new ArgumentException("chat message is null");
+                    // add as asssistant message
+                    var content = message.Content ?? string.Empty;
+                    content = @$"{content}
+<eof_msg>
+round # {i++}";
+                    yield return new ChatMessage(ChatRole.Assistant, content);
                 }
             }
         }

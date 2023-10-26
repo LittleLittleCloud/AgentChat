@@ -1,8 +1,12 @@
 name: nightly-build
 
 on:
-  push:
-    branches: [ "main" ]
+  workflow_run:
+    workflows:
+      - 'run-openai-test-and-notebooks'
+    types:
+      - completed
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 env:
   BUILD_CONFIGURATION: Release    # set this to the appropriate build configuration
 
