@@ -20,6 +20,7 @@ $skip_notebooks = @(
 # if the exit code is not 0, exit the script with exit code 1
 $failNotebooks = @()
 $exitCode = 0
+$LASTEXITCODE = 0
 foreach ($notebook in $notebooks) {
     Write-Host "Running $notebook"
     # get notebook name with extension
@@ -33,14 +34,17 @@ foreach ($notebook in $notebooks) {
     $notebookFolder = Split-Path -Parent $notebook
     $outputPath = "$outputFolder\$notebookFolder"
     Set-Location $notebookFolder
-    $proc = Start-Process -FilePath dotnet -ArgumentList "repl --run $name --exit-after-run" -Wait -PassThru -NoNewWindow -RedirectStandardOutput $outputPath\$name.output -RedirectStandardError $outputPath\$name.error
+    $proc = Start-Process -FilePath dotnet -ArgumentList "repl --run $name --exit-after-run" -PassThru -NoNewWindow
     $timeout = $null
-    $proc | Wait-Process -Timeout 60 -ErrorAction SilentlyContinue -ErrorVariable $timeout
+    $proc | Wait-Process -Timeout 180 -ErrorAction SilentlyContinue -ErrorVariable $timeout
     if ($timeout) {
         Write-Host "Timeout when running $notebook"
-        $failNotebooks += $notebook
         $LASTEXITCODE = 1
     }
+    else {
+        $LASTEXITCODE = $proc.ExitCode
+    }
+    Write-Host "Exit code: $LASTEXITCODE"
     if ($LASTEXITCODE -ne 0) {
         Write-Host "Failed to run $notebook"
         $failNotebooks += $notebook
