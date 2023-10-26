@@ -8,6 +8,13 @@ namespace AgentChat
 {
     public static class GroupChatExtension
     {
+        public static void AddInitializeMessage(this IAgent agent, string message, GroupChat groupChat)
+        {
+            var msg = new Message(ChatRole.User, message, from: agent.Name);
+
+            groupChat.AddInitializeMessage(msg);
+        }
+
         public static IEnumerable<IChatMessage> MessageToKeep(
             this IGroupChat _,
             IEnumerable<IChatMessage> messages)

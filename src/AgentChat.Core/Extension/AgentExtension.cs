@@ -14,6 +14,19 @@ namespace AgentChat
         public static async Task<IEnumerable<IChatMessage>> SendMessageToGroupAsync(
             this IAgent agent,
             GroupChat groupChat,
+            string msg,
+            int maxRound = 10,
+            bool throwWhenMaxRoundReached = false,
+            CancellationToken ct = default)
+        {
+            var chatMessage = new Message(ChatRole.User, msg, from: agent.Name);
+
+            return await agent.SendMessageToGroupAsync(groupChat, chatMessage, maxRound, throwWhenMaxRoundReached, ct);
+        }
+
+        public static async Task<IEnumerable<IChatMessage>> SendMessageToGroupAsync(
+            this IAgent agent,
+            GroupChat groupChat,
             IChatMessage msg,
             int maxRound = 10,
             bool throwWhenMaxRoundReached = false,

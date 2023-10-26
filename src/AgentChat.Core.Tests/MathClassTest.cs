@@ -1,4 +1,5 @@
 ﻿using AgentChat.Example.Share;
+using Azure.AI.OpenAI;
 using FluentAssertions;
 using System;
 using System.Collections.Generic;
@@ -101,9 +102,16 @@ Here are a few examples of not_enough_question:
 -example 1-
 the number of resolved question is 0 and it's smaller than 5, please create a question
 ",
-                functionMap: new Dictionary<Azure.AI.OpenAI.FunctionDefinition, Func<string, Task<string>>>
+                temperature: 0)
+                .WithAutoReply((msgs) =>
                 {
-                    { groupChatFunction.TerminateGroupChatFunction, groupChatFunction.TerminateGroupChatWrapper },
+                    // check if student successfully resolve 5 math problems
+                    if (msgs.Where(m => m.From == teacher.Name && m.Content?.Contains("[ANSWER_IS_CORRECT]") is true).Count() >= 5)
+                    {
+                        return new Message(ChatRole.Assistant, GroupChatFunction.TERMINATE, from: "Admin");
+                    }
+
+                    return null;
                 });
 
             var group = new GroupChat(
