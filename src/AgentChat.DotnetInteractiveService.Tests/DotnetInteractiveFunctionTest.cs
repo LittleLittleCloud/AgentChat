@@ -15,8 +15,12 @@ namespace AgentChat.DotnetInteractiveService.Tests
         public DotnetInteractiveFunctionTest(ITestOutputHelper output)
         {
             _output = output;
-            _workingDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(_workingDir);
+            _workingDir = Path.Combine(Path.GetTempPath(), "test");
+            if (!Directory.Exists(_workingDir))
+            {
+                Directory.CreateDirectory(_workingDir);
+            }
+
             _interactiveService = new InteractiveService(_workingDir);
             _interactiveService.StartAsync(_workingDir, default).Wait();
             _function = new DotnetInteractiveFunction(_interactiveService);
