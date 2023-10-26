@@ -3,7 +3,7 @@ name: nightly-build
 on:
   workflow_run:
     workflows:
-      - 'run-openai-test-and-notebooks'
+      - 'run-openai-test-and-notebookss'
     types:
       - completed
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
