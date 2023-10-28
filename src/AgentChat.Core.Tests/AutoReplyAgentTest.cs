@@ -56,7 +56,7 @@ namespace AgentChat.Core.Tests
             IAgent echoAgent = new EchoAgent("echo");
             echoAgent = echoAgent.WithPreprocess((msgs) =>
             {
-                return msgs.Select(msg => new Message(msg.Role, msg.Content?.ToUpper(), msg.Name, msg.From));
+                return msgs.Select(msg => new Message(msg.Role, msg.Content?.ToUpper(), msg.From));
             });
 
             var msg = new Message(ChatRole.User, "heLLo", "Bob");
@@ -67,7 +67,7 @@ namespace AgentChat.Core.Tests
 
             echoAgent = echoAgent.WithPreprocess((msgs) =>
             {
-                return msgs.Select(msg => new Message(msg.Role, msg.Content?.ToLower(), msg.Name, msg.From));
+                return msgs.Select(msg => new Message(msg.Role, msg.Content?.ToLower(), msg.From));
             });
 
             reply = await echoAgent.SendMessageAsync(msg);
@@ -81,7 +81,7 @@ namespace AgentChat.Core.Tests
             IAgent echoAgent = new EchoAgent("echo");
             echoAgent = echoAgent.WithPostprocess((msg) =>
             {
-                return new Message(msg.Role, msg.Content?.ToUpper(), msg.Name, msg.From);
+                return new Message(msg.Role, msg.Content?.ToUpper(), msg.From);
             });
 
             var msg = new Message(ChatRole.User, "heLLo", "Bob");
@@ -92,7 +92,7 @@ namespace AgentChat.Core.Tests
 
             echoAgent = echoAgent.WithPostprocess((msg) =>
             {
-                return new Message(msg.Role, msg.Content?.ToLower(), msg.Name, msg.From);
+                return new Message(msg.Role, msg.Content?.ToLower(), msg.From);
             });
 
             reply = await echoAgent.SendMessageAsync(msg);

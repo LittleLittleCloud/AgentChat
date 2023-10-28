@@ -11,6 +11,6 @@ namespace AgentChat
     {
         public string Name { get; }
 
-        public Task<IChatMessage> CallAsync(IEnumerable<IChatMessage> conversation, CancellationToken ct = default);
+        public Task<IChatMessage?> CallAsync(IEnumerable<IChatMessage> conversation, CancellationToken ct = default);
     }
 }

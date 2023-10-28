@@ -14,8 +14,6 @@ namespace AgentChat
 
         string? Content { get; }
 
-        string? Name { get; }
-
         string? From { get; }
     }
 
@@ -27,20 +25,16 @@ namespace AgentChat
         public Message(
             ChatRole role,
             string? content = null,
-            string? name = null,
             string? from = null)
         {
             Role = role;
             Content = content;
-            Name = name;
             From = from;
         }
 
         public ChatRole Role { get; }
 
         public string? Content { get; }
-
-        public string? Name { get; }
 
         public string? From { get; }
     }
