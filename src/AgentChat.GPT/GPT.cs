@@ -88,10 +88,7 @@ namespace AgentChat
                 {
                     GPTChatMessage gptMsg => gptMsg.ChatMessage,
                     ChatMessage chatMessage => chatMessage,
-                    _ => new ChatMessage(msg.Role, msg.Content)
-                    {
-                        Name = msg.Name,
-                    },
+                    _ => new ChatMessage(msg.Role, msg.Content),
                 };
             });
             var options = new ChatCompletionsOptions(chatMessages)
