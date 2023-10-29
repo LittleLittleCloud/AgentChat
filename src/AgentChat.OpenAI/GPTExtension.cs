@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace AgentChat
+namespace AgentChat.OpenAI
 {
     public static class GPTExtension
     {

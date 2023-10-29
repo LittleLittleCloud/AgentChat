@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using static AgentChat.IChatLLM;
 
-namespace AgentChat
+namespace AgentChat.OpenAI
 {
     public class GPT : IChatLLM
     {

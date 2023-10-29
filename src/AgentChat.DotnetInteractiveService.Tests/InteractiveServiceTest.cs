@@ -21,12 +21,11 @@ namespace AgentChat.DotnetInteractiveService.Tests
         {
             var tmp = Path.GetTempPath();
             var workDir = Path.Combine(tmp, "InteractiveService");
-            if (Directory.Exists(workDir))
+            if (!Directory.Exists(workDir))
             {
-                Directory.Delete(workDir, true);
+                Directory.CreateDirectory(workDir);
             }
 
-            Directory.CreateDirectory(workDir);
 
             using var service = new InteractiveService(workDir);
             service.Output += Service_Output;

@@ -1,6 +1,7 @@
 ﻿using AgentChat.Core.Tests;
 using AgentChat.Example.Share;
 using FluentAssertions;
+using AgentChat.OpenAI;
 using Xunit.Abstractions;
 
 namespace AgentChat.DotnetInteractiveService.Tests
