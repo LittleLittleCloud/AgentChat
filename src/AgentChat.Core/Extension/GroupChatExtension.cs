@@ -1,8 +1,5 @@
-﻿using Azure.AI.OpenAI;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace AgentChat
 {
@@ -10,7 +7,7 @@ namespace AgentChat
     {
         public static void AddInitializeMessage(this IAgent agent, string message, GroupChat groupChat)
         {
-            var msg = new Message(ChatRole.User, message, from: agent.Name);
+            var msg = new Message(Role.User, message, from: agent.Name);
 
             groupChat.AddInitializeMessage(msg);
         }
@@ -66,7 +63,7 @@ namespace AgentChat
 <eof_msg>
 round # {i}";
 
-                return new Message(ChatRole.User, content: msg);
+                return new Message(Role.User, content: msg);
             });
         }
     }

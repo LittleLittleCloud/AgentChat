@@ -45,7 +45,7 @@ Response example:
 {{
 // fixed json
 }}";
-                    var systemMessage = new Message(ChatRole.System, prompt);
+                    var systemMessage = new Message(Role.System, prompt);
 
                     var res = await this.chatLLM.GetChatCompletionsAsync(new[] { systemMessage }, 0, 1024);
                     var completion = res.Message ?? throw new Exception("fail to generate json response");

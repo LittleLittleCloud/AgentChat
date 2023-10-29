@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+	  <LangVersion>preview</LangVersion>
+	  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Azure.AI.OpenAI"
+						  Version="$(AzureOpenAIVersion)" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AgentChat.Core\AgentChat.Core.csproj" />
+	<ProjectReference Include="..\AgentChat.SourceGenerator\AgentChat.SourceGenerator.csproj">
+		 <IncludeAssets>all</IncludeAssets>
+		 <OutputItemType>Analyzer</OutputItemType>
+		 <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+	</ProjectReference>
+  </ItemGroup>
+
+</Project>

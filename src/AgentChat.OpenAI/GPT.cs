@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using static AgentChat.IChatLLM;
 
 namespace AgentChat
 {
@@ -75,7 +76,7 @@ namespace AgentChat
 
 
 
-        public async Task<IChatCompletion> GetChatCompletionsAsync(
+        public async Task<ChatCompletion> GetChatCompletionsAsync(
             IEnumerable<IChatMessage> messages,
             float? temperature = null,
             int? maxToken = null,
@@ -88,7 +89,7 @@ namespace AgentChat
                 {
                     GPTChatMessage gptMsg => gptMsg.ChatMessage,
                     ChatMessage chatMessage => chatMessage,
-                    _ => new ChatMessage(msg.Role, msg.Content),
+                    _ => new ChatMessage(msg.Role.ToChatRole(), msg.Content),
                 };
             });
             var options = new ChatCompletionsOptions(chatMessages)
@@ -108,10 +109,12 @@ namespace AgentChat
             if (response.Value is ChatCompletions completions)
             {
                 var completion = completions.Choices.First();
-                var chatCompletion = new GPTChatCompletion
+                var chatCompletion = new ChatCompletion
                 {
                     Message = new GPTChatMessage(completion.Message),
-                    Usage = completions.Usage,
+                    PromptTokens = completions.Usage.PromptTokens,
+                    TotalTokens = completions.Usage.TotalTokens,
+                    CompletionTokens = completions.Usage.CompletionTokens,
                 };
 
                 return chatCompletion;
@@ -136,19 +139,12 @@ namespace AgentChat
 
         public string? From { get; set; }
 
-        public ChatRole Role => this.msg.Role;
+        public Role Role => this.msg.Role.ToRole();
 
         public string? Content => this.msg.Content;
 
         public FunctionCall? FunctionCall => this.msg.FunctionCall;
 
         public string? Name => this.msg.Name;
-    }
-
-    public class GPTChatCompletion : IChatCompletion
-    {
-        public IChatMessage? Message { get; set; }
-
-        public CompletionsUsage? Usage { get; set; }
     }
 }

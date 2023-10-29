@@ -11,7 +11,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\AgentChat.DotnetInteractiveService\AgentChat.DotnetInteractiveFunction.csproj" />
 		<ProjectReference Include="..\AgentChat.Example.Share\AgentChat.Example.Share.csproj" />
-		<ProjectReference Include="..\AgentChat.GPT\AgentChat.GPT.csproj" />
+		<ProjectReference Include="..\AgentChat.OpenAI\AgentChat.OpenAI.csproj" />
 	</ItemGroup>
 
 </Project>

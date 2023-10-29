@@ -1,5 +1,4 @@
-﻿using Azure.AI.OpenAI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -30,7 +29,7 @@ namespace AgentChat
         public async Task<IAgent?> SelectNextSpeakerAsync(IEnumerable<IChatMessage> conversationHistory)
         {
             var agent_names = this.agents.Select(x => x.Name).ToList();
-            var systemMessage = new Message(ChatRole.System,
+            var systemMessage = new Message(Role.System,
                 content: $@"You are in a role play game. Carefully read the conversation history and carry on the conversation.
 The available roles are:
 {string.Join(",", agent_names)}

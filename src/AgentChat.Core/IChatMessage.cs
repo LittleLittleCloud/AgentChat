@@ -1,13 +1,8 @@
-﻿using Azure.AI.OpenAI;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AgentChat
+﻿namespace AgentChat
 {
     public interface IChatMessage
     {
-        ChatRole Role { get; }
+        Role Role { get; }
 
         // TODO
         // add image
@@ -23,7 +18,7 @@ namespace AgentChat
     public class Message : IChatMessage
     {
         public Message(
-            ChatRole role,
+            Role role,
             string? content = null,
             string? from = null)
         {
@@ -32,7 +27,7 @@ namespace AgentChat
             From = from;
         }
 
-        public ChatRole Role { get; }
+        public Role Role { get; }
 
         public string? Content { get; }
 
