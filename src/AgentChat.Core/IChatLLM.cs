@@ -12,22 +12,6 @@ namespace AgentChat
     /// </summary>
     public interface IChatLLM
     {
-        /// <summary>
-        /// Create <see cref="IChatMessage"/> that accomodates the underlying chat model.
-        /// </summary>
-        /// <param name="role">mapping to <see cref="ChatMessage.Role"/></param>
-        /// <param name="content">mapping to <see cref="ChatMessage.Content"/>.</param>
-        /// <param name="name">mapping to <see cref="ChatMessage.Name"/>.
-        /// Note that <see cref="IGroupChat"/> doesn't use this field to identify the sender.
-        /// The sender is indicated via <see cref="IChatMessage.From"/> field.</param>
-        /// <param name="from">if set, indicates which agent/entity creates this message.</param>
-        /// <returns></returns>
-        IChatMessage CreateChatMessage(
-            ChatRole role,
-            string? content = null,
-            string? name = null,
-            string? from = null);
-
         // TODO
         // support streaming chat
         Task<IChatCompletion> GetChatCompletionsAsync(

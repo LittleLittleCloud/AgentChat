@@ -153,11 +153,11 @@ for any other case
             msg.Content.Should().StartWith("Installed nuget packages:");
 
             // use runner agent to auto-reply message from coder
-            var userAgent = runner.WithAutoReply(async (msgs) =>
+            var userAgent = runner.CreateAutoReplyAgent("User", async (msgs, ct) =>
             {
                 // if last message contains "COMPLETE", stop sending messages to runner agent and fall back to user agent
                 if (msgs.Last().Content?.Contains("COMPLETE") is true)
-                    return new Message(ChatRole.User, GroupChatFunction.TERMINATE, from: runner.Name);
+                    return new Message(ChatRole.User, GroupChatFunction.TERMINATE, from: "User");
 
                 // otherwise, send message to runner agent to either run code or install nuget packages and get the reply
                 return await runner.SendMessageAsync(msgs.Last());

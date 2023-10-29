@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AgentChat
@@ -7,6 +8,6 @@ namespace AgentChat
     {
         void AddInitializeMessage(IChatMessage message);
 
-        Task<IEnumerable<IChatMessage>> CallAsync(IEnumerable<IChatMessage>? conversationWithName = null, int maxRound = 10, bool throwExceptionWhenMaxRoundReached = true);
+        Task<IEnumerable<IChatMessage>> CallAsync(IEnumerable<IChatMessage>? conversationWithName = null, int maxRound = 10, bool throwExceptionWhenMaxRoundReached = true, CancellationToken? ct = null);
     }
 }

@@ -103,7 +103,7 @@ Here are a few examples of not_enough_question:
 the number of resolved question is 0 and it's smaller than 5, please create a question
 ",
                 temperature: 0)
-                .WithAutoReply((msgs) =>
+                .CreateAutoReplyAgent("Admin", async (msgs, ct) =>
                 {
                     // check if student successfully resolve 5 math problems
                     if (msgs.Where(m => m.From == teacher.Name && m.Content?.Contains("[ANSWER_IS_CORRECT]") is true).Count() >= 5)

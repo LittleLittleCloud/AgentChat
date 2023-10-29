@@ -51,9 +51,8 @@ namespace AgentChat
             return initialMessages.Concat(messages);
         }
 
-        public static IEnumerable<IChatMessage> ProcessConversationsForRolePlay(
+        internal static IEnumerable<IChatMessage> ProcessConversationsForRolePlay(
                 this IGroupChat groupChat,
-                IChatLLM chatLLM,
                 IEnumerable<IChatMessage> initialMessages,
                 IEnumerable<IChatMessage> messages)
         {
@@ -66,7 +65,8 @@ namespace AgentChat
 {x.Content}
 <eof_msg>
 round # {i}";
-                return chatLLM.CreateChatMessage(ChatRole.User, content: msg);
+
+                return new Message(ChatRole.User, content: msg);
             });
         }
     }
