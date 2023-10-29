@@ -29,7 +29,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgentChat.Core.Tests", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgentChat.Core", "src\AgentChat.Core\AgentChat.Core.csproj", "{025D60EA-0AA6-4B44-9FF9-8DB51E06D849}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgentChat.OpenAI", "src\AgentChat.GPT\AgentChat.OpenAI.csproj", "{787CC92D-CDB1-4D26-912D-5E7702DB79AE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgentChat.OpenAI", "src\AgentChat.OpenAI\AgentChat.OpenAI.csproj", "{787CC92D-CDB1-4D26-912D-5E7702DB79AE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgentChat.Example.Share", "src\AgentChat.Example.Share\AgentChat.Example.Share.csproj", "{0B4538E4-987D-4160-BCDD-5282CD310AC8}"
 EndProject

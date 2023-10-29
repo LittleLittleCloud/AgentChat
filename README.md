@@ -10,8 +10,8 @@ First add the following package reference to your project file:
 ```xml
 <ItemGroup>
     <PackageReference Include="AgentChat.Core" />
-    <!-- Add AgentChat.GPT to connect to GPT models -->
-    <PackageReference Include="AgentChat.GPT" />
+    <!-- Add AgentChat.OpenAI to connect to OpenAI chat models -->
+    <PackageReference Include="AgentChat.OpenAI" />
 </ItemGroup>
 ```
 
@@ -113,7 +113,7 @@ var chatHistory = await heisenberg.SendMessagesAsync(
 // From Bob: Your name is Heisenberg.
 ```
 
-`AgentChat` provides a source generator that generates `FunctionDefition` and wrapper caller according to the signature of a function. For more information, please check [Facilitate Chat FunctionCall for GPT-series model](./src/AgentChat.Core/README.md#facilitate-chat-functioncall-for-gpt-series-model).
+`AgentChat.OpenAI` provides a source generator that generates `FunctionDefition` and wrapper caller according to the signature of a function. For more information, please check [Facilitate Chat FunctionCall for GPT-series model](./src/AgentChat.GPT/README.md#facilitate-chat-functioncall-for-gpt-series-model).
 
 ## Notebook Examples
 You can find notebook examples from [here](./notebook/).

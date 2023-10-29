@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AgentChat.Core\AgentChat.Core.csproj" />
-    <ProjectReference Include="..\AgentChat.GPT\AgentChat.OpenAI.csproj" />
+    <ProjectReference Include="..\AgentChat.OpenAI\AgentChat.OpenAI.csproj" />
 	  <ProjectReference Include="..\AgentChat.SourceGenerator\AgentChat.SourceGenerator.csproj">
 		  <IncludeAssets>all</IncludeAssets>
 		  <OutputItemType>Analyzer</OutputItemType>
