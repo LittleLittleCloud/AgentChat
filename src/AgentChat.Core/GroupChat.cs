@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AgentChat
@@ -64,7 +65,11 @@ From admin:
             this.initializeMessages = this.initializeMessages.Append(message);
         }
 
-        public async Task<IEnumerable<IChatMessage>> CallAsync(IEnumerable<IChatMessage>? conversationWithName = null, int maxRound = 10, bool throwExceptionWhenMaxRoundReached = false)
+        public async Task<IEnumerable<IChatMessage>> CallAsync(
+            IEnumerable<IChatMessage>? conversationWithName = null,
+            int maxRound = 10,
+            bool throwExceptionWhenMaxRoundReached = false,
+            CancellationToken? ct = null)
         {
             if (maxRound == 0)
             {

@@ -13,7 +13,7 @@ namespace AgentChat
     {
         public static async Task<IEnumerable<IChatMessage>> SendMessageToGroupAsync(
             this IAgent agent,
-            GroupChat groupChat,
+            IGroupChat groupChat,
             string msg,
             int maxRound = 10,
             bool throwWhenMaxRoundReached = false,
@@ -26,7 +26,7 @@ namespace AgentChat
 
         public static async Task<IEnumerable<IChatMessage>> SendMessageToGroupAsync(
             this IAgent agent,
-            GroupChat groupChat,
+            IGroupChat groupChat,
             IChatMessage msg,
             int maxRound = 10,
             bool throwWhenMaxRoundReached = false,
@@ -37,7 +37,7 @@ namespace AgentChat
                 throw new ArgumentException("The message is not from the agent", nameof(msg));
             }
 
-            return await groupChat.CallAsync(new[] { msg }, maxRound, throwWhenMaxRoundReached);
+            return await groupChat.CallAsync(new[] { msg }, maxRound, throwWhenMaxRoundReached, ct);
         }
 
         public static async Task<IChatMessage> SendMessageAsync(

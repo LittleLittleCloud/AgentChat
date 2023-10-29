@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace AgentChat
@@ -27,7 +28,8 @@ namespace AgentChat
         public async Task<IEnumerable<IChatMessage>> CallAsync(
             IEnumerable<IChatMessage>? conversationWithName = null,
             int maxRound = 10,
-            bool throwExceptionWhenMaxRoundReached = false)
+            bool throwExceptionWhenMaxRoundReached = false,
+            CancellationToken? ct = null)
         {
             var conversationHistory = new List<IChatMessage>();
             if (conversationWithName != null)
