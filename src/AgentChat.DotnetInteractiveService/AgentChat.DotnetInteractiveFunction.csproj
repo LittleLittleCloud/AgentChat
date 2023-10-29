@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
 	<ItemGroup>
@@ -18,9 +19,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\AgentChat.Core\AgentChat.Core.csproj" />
-		<ProjectReference Include="..\AgentChat.SourceGenerator\AgentChat.SourceGenerator.csproj"
-						  OutputItemType="Analyzer"
-						  ReferenceOutputAssembly="true" />
+		<ProjectReference Include="..\AgentChat.SourceGenerator\AgentChat.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
 
 	</ItemGroup>
 

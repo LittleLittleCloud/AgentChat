@@ -3,6 +3,9 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<Description>AgentChat core library.</Description>
 		<Nullable>enable</Nullable>
+		<LangVersion>preview</LangVersion>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<RootNamespace>AgentChat</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>

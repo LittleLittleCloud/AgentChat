@@ -29,7 +29,7 @@ namespace AgentChat
         public async Task<IAgent?> SelectNextSpeakerAsync(IEnumerable<IChatMessage> conversationHistory)
         {
             var agent_names = this.agents.Select(x => x.Name).ToList();
-            var systemMessage = chatLLM.CreateChatMessage(ChatRole.System,
+            var systemMessage = new Message(ChatRole.System,
                 content: $@"You are in a role play game. Carefully read the conversation history and carry on the conversation.
 The available roles are:
 {string.Join(",", agent_names)}
@@ -38,7 +38,7 @@ Each message will start with 'From name:', e.g:
 From admin:
 //your message//.");
 
-            var conv = this.ProcessConversationsForRolePlay(this.chatLLM, this.initializeMessages, conversationHistory);
+            var conv = this.ProcessConversationsForRolePlay(this.initializeMessages, conversationHistory);
 
             var messages = new IChatMessage[] { systemMessage }.Concat(conv);
             var response = await this.chatLLM.GetChatCompletionsWithRetryAsync(messages, temperature: 0, stopWords: new[] { ":" });

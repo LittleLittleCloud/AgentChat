@@ -141,117 +141,53 @@ namespace AgentChat
             return await groupChat.CallAsync(chatHistory, maxRound, throwWhenMaxRoundReached);
         }
 
+        
         /// <summary>
-        /// Add auto reply message to the agent. If the conversation matches the condition, the auto reply message will be sent as reply. Otherwise, the agent will be called to generate the reply message.
-        /// Multiple auto reply messages can be added to the agent.
-        /// And the auto reply messages will be called in the order they are added.
+        /// Create an <see cref="AutoReplyAgent"/> from the <paramref name="agent"/>.
         /// </summary>
-        /// <param name="agent">agent to add auto reply</param>
+        /// <param name="agent">inner agent</param>
+        /// <param name="name">name of the <see cref="AutoReplyAgent"/></param>
         /// <param name="autoReplyMessageFunc">function to determine the auto reply message.
         /// If the function returns a message, that message will be sent as auto reply.
         /// If the function returns null, the <paramref name="agent"/> will be called to generate the reply message.</param>
-        public static IAgent WithAutoReply(
+        /// <returns><see cref="AutoReplyAgent"/></returns>
+        public static AutoReplyAgent CreateAutoReplyAgent(
             this IAgent agent,
-            Func<IEnumerable<IChatMessage>, IChatMessage?> autoReplyMessageFunc)
+            string name,
+            Func<IEnumerable<IChatMessage>, CancellationToken?, Task<IChatMessage?>> autoReplyMessageFunc)
         {
-            var func = new Func<IEnumerable<IChatMessage>, Task<IChatMessage?>>(x => Task.FromResult(autoReplyMessageFunc(x)));
-            
-            return WithAutoReply(agent, func);
+            return new AutoReplyAgent(agent, name, autoReplyMessageFunc);
         }
 
-        /// <inheritdoc cref="WithAutoReply(IAgent, Func{IEnumerable{IChatMessage}, IChatMessage?})"/>
-        public static IAgent WithAutoReply(
-            this IAgent agent,
-            Func<IEnumerable<IChatMessage>, Task<IChatMessage?>> autoReplyMessageFunc)
-        {
-            if (agent is AutoReplyAgent autoReply)
-            {
-                autoReply.AddAutoReplyMessage(autoReplyMessageFunc);
-
-                return autoReply;
-            }
-            else
-            {
-                var newAgent = new AutoReplyAgent(agent);
-                newAgent.AddAutoReplyMessage(autoReplyMessageFunc);
-
-                return newAgent;
-            }
-        }
-
-        /// <inheritdoc cref="WithPreprocess(IAgent, Func{IEnumerable{IChatMessage}, Task{IEnumerable{IChatMessage}}})"/>
-        public static IAgent WithPreprocess(
-            this IAgent agent,
-            Func<IEnumerable<IChatMessage>, IEnumerable<IChatMessage>> preprocessFunc)
-        {
-            var func = new Func<IEnumerable<IChatMessage>, Task<IEnumerable<IChatMessage>>>(x => Task.FromResult(preprocessFunc(x)));
-
-            return agent.WithPreprocess(func);
-        }
 
         /// <summary>
-        /// Add preprocess function to the agent.
-        /// The preprocess function will be called before calling the agent to generate the reply message and after no auto reply is available.
-        /// Multiple preprocess functions can be added to the agent.
-        /// And the preprocess functions will be called in the order they are added.
+        /// Create an <see cref="PreprocessAgent"/> from the <paramref name="innerAgent"/>.
         /// </summary>
-        /// <param name="agent">The agent to add preprocess function</param>
+        /// <param name="innerAgent">The inner agent</param>
         /// <param name="preprocessFunc">preprocess function to be added</param>
-        public static IAgent WithPreprocess(
-            this IAgent agent,
-            Func<IEnumerable<IChatMessage>, Task<IEnumerable<IChatMessage>>> preprocessFunc)
+        /// <returns><see cref="PreprocessAgent"/></returns>
+        public static PreprocessAgent CreatePreprocessAgent(
+            this IAgent innerAgent,
+            string name,
+            Func<IEnumerable<IChatMessage>, CancellationToken?, Task<IEnumerable<IChatMessage>>> preprocessFunc)
         {
-            if (agent is AutoReplyAgent autoReply)
-            {
-                autoReply.AddPreProcess(preprocessFunc);
-
-                return autoReply;
-            }
-            else
-            {
-                var newAgent = new AutoReplyAgent(agent);
-                newAgent.AddPreProcess(preprocessFunc);
-
-                return newAgent;
-            }
-        }
-
-        /// <inheritdoc cref="WithPostprocess(IAgent, Func{IChatMessage, Task{IChatMessage}})"/>
-        public static IAgent WithPostprocess(
-            this IAgent agent,
-            Func<IChatMessage, IChatMessage> postprocessFunc)
-        {
-            var func = new Func<IChatMessage, Task<IChatMessage>>(x => Task.FromResult(postprocessFunc(x)));
-
-            return agent.WithPostprocess(func);
+           return new PreprocessAgent(innerAgent, name, preprocessFunc);
         }
 
         /// <summary>
-        /// Add postprocess function to the agent.
-        /// The postprocess function will be called after the agent generate the reply message.
-        /// Multiple postprocess functions can be added to the agent.
-        /// And the postprocess functions will be called in the order they are added.
+        /// Create an <see cref="PostProcessAgent"/> from the <paramref name="innerAgent"/>.
         /// </summary>
-        /// <param name="agent"></param>
-        /// <param name="postprocessFunc"></param>
-        /// <returns></returns>
-        public static IAgent WithPostprocess(
-            this IAgent agent,
-            Func<IChatMessage, Task<IChatMessage>> postprocessFunc)
+        /// <param name="innerAgent">inner agent.</param>
+        /// <param name="postprocessFunc">post process function to be added.
+        /// The function takes the conversation history, the reply message and the cancellation token as input.
+        /// And returns the post processed reply message.</param>
+        /// <returns><see cref="PostProcessAgent"/></returns>
+        public static PostProcessAgent CreatePostProcessAgent(
+            this IAgent innerAgent,
+            string name,
+            Func<IEnumerable<IChatMessage>, IChatMessage, CancellationToken?, Task<IChatMessage>> postprocessFunc)
         {
-            if (agent is AutoReplyAgent autoReply)
-            {
-                autoReply.AddPostProcess(postprocessFunc);
-
-                return autoReply;
-            }
-            else
-            {
-                var newAgent = new AutoReplyAgent(agent);
-                newAgent.AddPostProcess(postprocessFunc);
-
-                return newAgent;
-            }
+            return new PostProcessAgent(innerAgent, name, postprocessFunc);
         }
     }
 }

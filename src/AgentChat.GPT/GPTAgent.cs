@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -58,8 +57,6 @@ namespace AgentChat
                 if (_functionMaps?.FirstOrDefault(kv => kv.Key.Name == function.Name).Value is Func<string, Task<string>> func)
                 {
                     var parameters = function.Arguments;
-                    Console.WriteLine($"function name: {function.Name}");
-                    Console.WriteLine($"raw function call: {function.Arguments}");
                     try
                     {
                         var functionResult = await func(parameters);

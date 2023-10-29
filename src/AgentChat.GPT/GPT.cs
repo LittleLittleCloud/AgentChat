@@ -121,19 +121,6 @@ namespace AgentChat
                 throw new Exception("response is not ChatCompletions");
             }
         }
-
-        public IChatMessage CreateChatMessage(ChatRole role, string? content = null, string? name = null, string? from = null)
-        {
-            var msg = new ChatMessage(role, content)
-            {
-                Name = name,
-            };
-
-            return new GPTChatMessage(msg)
-            {
-                From = from,
-            };
-        }
     }
 
     public class GPTChatMessage: IChatMessage

@@ -35,7 +35,7 @@ namespace AgentChat.DotnetInteractiveService.Tests
 
             isRunning.Should().BeTrue();
 
-            (await service.IsRunningAsync(cts.Token)).Should().BeTrue();
+            service.IsRunning().Should().BeTrue();
 
             var versionFormatString = string.Empty;
 

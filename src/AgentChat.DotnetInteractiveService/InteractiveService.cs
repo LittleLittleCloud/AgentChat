@@ -11,10 +11,6 @@ using Microsoft.DotNet.Interactive.Utility;
 using System.Diagnostics;
 using System.Reactive.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading;
-using Microsoft.DotNet.Interactive;
-using System.CommandLine;
 
 namespace AgentChat.DotnetInteractiveService
 {
@@ -29,15 +25,11 @@ namespace AgentChat.DotnetInteractiveService
 
         public event EventHandler<DisplayEvent>? DisplayEvent;
 
-        public event EventHandler<KernelEvent>? KernelEvent;
-
         public event EventHandler<string>? Output;
 
         public event EventHandler<CommandFailed>? CommandFailed;
 
         public event EventHandler<HoverTextProduced>? HoverTextProduced;
-
-        public event EventHandler<SignatureHelpProduced>? SignatureHelpProduced;
 
         public InteractiveService(string workingDirectory)
         {
@@ -144,7 +136,7 @@ namespace AgentChat.DotnetInteractiveService
 
                 return compositeKernel;
             }
-            catch (CommandLineInvocationException ex) when (ex.Message.Contains("Cannot find a tool in the manifest file that has a command named 'dotnet-interactive'") )
+            catch (CommandLineInvocationException ex) when (ex.Message.Contains("Cannot find a tool in the manifest file that has a command named 'dotnet-interactive'"))
             {
                 var success = this.RestoreDotnetInteractive();
 
@@ -233,7 +225,7 @@ namespace AgentChat.DotnetInteractiveService
             }
         }
 
-        public async Task<bool> IsRunningAsync(CancellationToken ct)
+        public bool IsRunning()
         {
             return this.kernel != null;
         }
@@ -244,8 +236,13 @@ namespace AgentChat.DotnetInteractiveService
             {
                 if (disposing)
                 {
-                    this.process?.Dispose();
                     this.kernel?.Dispose();
+
+                    if (this.process != null)
+                    {
+                        this.process.Kill();
+                        this.process.Dispose();
+                    }
                 }
 
                 disposedValue = true;

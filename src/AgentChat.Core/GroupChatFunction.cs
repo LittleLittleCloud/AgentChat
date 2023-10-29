@@ -15,9 +15,9 @@ namespace AgentChat
         /// </summary>
         /// <param name="message">terminate message.</param>
         [FunctionAttribution]
-        public async Task<string> TerminateGroupChat(string message)
+        public Task<string> TerminateGroupChat(string message)
         {
-            return $"{GroupChatFunction.TERMINATE}: {message}";
+            return Task.FromResult($"{GroupChatFunction.TERMINATE}: {message}");
         }
 
         /// <summary>
@@ -25,12 +25,14 @@ namespace AgentChat
         /// </summary>
         /// <param name="context">conversation context.</param>
         [FunctionAttribution]
-        public async Task<string> ClearGroupChat(string context)
+        public Task<string> ClearGroupChat(string context)
         {
-            return @$"{context}
+
+            var msg = @$"{context}
 <eof_msg>
 {GroupChatFunction.CLEAR_MESSAGES}
 ";
+            return Task.FromResult(msg);
         }
     }
 }
