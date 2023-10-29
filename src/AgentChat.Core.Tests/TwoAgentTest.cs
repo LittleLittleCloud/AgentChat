@@ -1,13 +1,9 @@
-﻿using AgentChat.Example.Share;
+﻿using AgentChat.DotnetInteractiveService;
+using AgentChat.Example.Share;
+using AgentChat.OpenAI;
 using Azure.AI.OpenAI;
 using FluentAssertions;
-using System.IO;
-using AgentChat.DotnetInteractiveService;
-using Azure.AI.OpenAI;
-using System.Text.Json;
 using Xunit.Abstractions;
-using Azure;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 
 namespace AgentChat.Core.Tests
 {
@@ -169,7 +165,7 @@ for any other case
                 maxRound: 10);
 
             // print chat history
-            foreach( var message in chatHistory)
+            foreach (var message in chatHistory)
             {
                 _output.WriteLine(message.FormatMessage());
             }

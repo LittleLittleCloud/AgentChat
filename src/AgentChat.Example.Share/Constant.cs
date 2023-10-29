@@ -1,4 +1,5 @@
-﻿using Azure.AI.OpenAI;
+﻿using AgentChat.OpenAI;
+using Azure.AI.OpenAI;
 using System;
 
 namespace AgentChat.Example.Share

@@ -1,12 +1,6 @@
 ﻿using AgentChat.Example.Share;
-using Azure.AI.OpenAI;
+using AgentChat.OpenAI;
 using FluentAssertions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Xunit;
 using Xunit.Abstractions;
 
 namespace AgentChat.Core.Tests

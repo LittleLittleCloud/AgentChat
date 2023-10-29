@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
 	  <LangVersion>preview</LangVersion>
 	  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	<RootNamespace>AgentChat.OpenAI</RootNamespace>
   </PropertyGroup>
 
 	<ItemGroup>

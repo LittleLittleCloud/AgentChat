@@ -4,6 +4,7 @@ using System.Text;
 using AgentChat.DotnetInteractiveService;
 using AgentChat.Example.Share;
 using AgentChat;
+using AgentChat.OpenAI;
 
 var workDir = Path.Combine(Path.GetTempPath(), "InteractiveService");
 

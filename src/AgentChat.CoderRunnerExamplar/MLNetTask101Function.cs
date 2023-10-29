@@ -1,4 +1,4 @@
-﻿using Azure.AI.OpenAI;
+﻿using AgentChat.OpenAI;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
