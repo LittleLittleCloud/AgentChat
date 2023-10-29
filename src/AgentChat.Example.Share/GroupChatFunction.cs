@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
-namespace AgentChat
+namespace AgentChat.Example.Share
 {
     public partial class GroupChatFunction
     {
-        public const string TERMINATE = "[GROUPCHAT_TERMINATE]";
-        public const string CLEAR_MESSAGES = "// ignore this line [GROUPCHAT_CLEAR_MESSAGES]";
-
         /// <summary>
         /// terminate the group chat.
         /// </summary>
@@ -17,7 +11,7 @@ namespace AgentChat
         [FunctionAttribution]
         public Task<string> TerminateGroupChat(string message)
         {
-            return Task.FromResult($"{GroupChatFunction.TERMINATE}: {message}");
+            return Task.FromResult($"{IChatMessageExtension.TERMINATE}: {message}");
         }
 
         /// <summary>
@@ -30,7 +24,7 @@ namespace AgentChat
 
             var msg = @$"{context}
 <eof_msg>
-{GroupChatFunction.CLEAR_MESSAGES}
+{IChatMessageExtension.CLEAR_MESSAGES}
 ";
             return Task.FromResult(msg);
         }

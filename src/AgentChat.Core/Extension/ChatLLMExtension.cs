@@ -1,8 +1,5 @@
-﻿using Azure.AI.OpenAI;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,7 +7,7 @@ namespace AgentChat
 {
     public static class ChatLLMExtension
     {
-        public static async Task<IChatCompletion> GetChatCompletionsWithRetryAsync(
+        public static async Task<IChatLLM.ChatCompletion> GetChatCompletionsWithRetryAsync(
             this IChatLLM chatLLM,
             IEnumerable<IChatMessage> messages,
             float? temperature = null,

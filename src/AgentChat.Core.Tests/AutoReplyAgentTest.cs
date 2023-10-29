@@ -12,13 +12,13 @@ namespace AgentChat.Core.Tests
         {
             var echoAgent = new EchoAgent("echo");
             IAgent alice = echoAgent
-                .CreateAutoReplyAgent("Alice", async (conversations, ct) => new Message(ChatRole.Assistant, "I'm your father", from: "Alice"));
+                .CreateAutoReplyAgent("Alice", async (conversations, ct) => new Message(Role.Assistant, "I'm your father", from: "Alice"));
 
-            var msg = new Message(ChatRole.User, "hey", from: "Bob");
+            var msg = new Message(Role.User, "hey", from: "Bob");
             var reply = await alice.SendMessageAsync(msg);
             reply.From.Should().Be("Alice");
             reply.Content.Should().Be("I'm your father");
-            reply.Role.Should().Be(ChatRole.Assistant);
+            reply.Role.Should().Be(Role.Assistant);
         }
 
 
@@ -31,7 +31,7 @@ namespace AgentChat.Core.Tests
                 return msgs.Select(msg => new Message(msg.Role, msg.Content?.ToUpper(), msg.From));
             });
 
-            var msg = new Message(ChatRole.User, "heLLo", "Bob");
+            var msg = new Message(Role.User, "heLLo", "Bob");
             var reply = await echoAgent.SendMessageAsync(msg);
 
             reply.Content.Should().Be("HELLO");
@@ -47,7 +47,7 @@ namespace AgentChat.Core.Tests
                 return new Message(reply.Role, reply.Content?.ToUpper(), reply.From);
             });
 
-            var msg = new Message(ChatRole.User, "heLLo", "Bob");
+            var msg = new Message(Role.User, "heLLo", "Bob");
             var reply = await echoAgent.SendMessageAsync(msg);
 
             reply.Content.Should().Be("HELLO");

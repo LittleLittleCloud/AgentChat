@@ -1,9 +1,6 @@
-﻿using AgentChat;
-using Azure.AI.OpenAI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,7 +16,7 @@ namespace AgentChat
             bool throwWhenMaxRoundReached = false,
             CancellationToken ct = default)
         {
-            var chatMessage = new Message(ChatRole.User, msg, from: agent.Name);
+            var chatMessage = new Message(Role.User, msg, from: agent.Name);
 
             return await agent.SendMessageToGroupAsync(groupChat, chatMessage, maxRound, throwWhenMaxRoundReached, ct);
         }
@@ -52,7 +49,7 @@ namespace AgentChat
             string msg,
             CancellationToken ct = default)
         {
-            var userMessage = new Message(ChatRole.User, msg);
+            var userMessage = new Message(Role.User, msg);
 
             return await agent.SendMessageAsync(userMessage, ct);
         }
@@ -97,7 +94,7 @@ namespace AgentChat
             bool throwWhenMaxRoundReached = false,
             CancellationToken ct = default)
         {
-            var chatMessage = new Message(ChatRole.User, message, from: agent.Name);
+            var chatMessage = new Message(Role.User, message, from: agent.Name);
 
             var chatHistory = new[] { chatMessage };
 
@@ -141,7 +138,7 @@ namespace AgentChat
             return await groupChat.CallAsync(chatHistory, maxRound, throwWhenMaxRoundReached);
         }
 
-        
+
         /// <summary>
         /// Create an <see cref="AutoReplyAgent"/> from the <paramref name="agent"/>.
         /// </summary>
@@ -171,7 +168,7 @@ namespace AgentChat
             string name,
             Func<IEnumerable<IChatMessage>, CancellationToken?, Task<IEnumerable<IChatMessage>>> preprocessFunc)
         {
-           return new PreprocessAgent(innerAgent, name, preprocessFunc);
+            return new PreprocessAgent(innerAgent, name, preprocessFunc);
         }
 
         /// <summary>

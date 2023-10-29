@@ -108,7 +108,7 @@ the number of resolved question is 0 and it's smaller than 5, please create a qu
                     // check if student successfully resolve 5 math problems
                     if (msgs.Where(m => m.From == teacher.Name && m.Content?.Contains("[ANSWER_IS_CORRECT]") is true).Count() >= 5)
                     {
-                        return new Message(ChatRole.Assistant, GroupChatFunction.TERMINATE, from: "Admin");
+                        return new Message(Role.Assistant, IChatMessageExtension.TERMINATE, from: "Admin");
                     }
 
                     return null;

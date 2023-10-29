@@ -157,7 +157,7 @@ for any other case
             {
                 // if last message contains "COMPLETE", stop sending messages to runner agent and fall back to user agent
                 if (msgs.Last().Content?.Contains("COMPLETE") is true)
-                    return new Message(ChatRole.User, GroupChatFunction.TERMINATE, from: "User");
+                    return new Message(Role.User, IChatMessageExtension.TERMINATE, from: "User");
 
                 // otherwise, send message to runner agent to either run code or install nuget packages and get the reply
                 return await runner.SendMessageAsync(msgs.Last());

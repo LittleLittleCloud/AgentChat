@@ -1,7 +1,4 @@
-﻿using Azure.AI.OpenAI;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,11 +11,22 @@ namespace AgentChat
     {
         // TODO
         // support streaming chat
-        Task<IChatCompletion> GetChatCompletionsAsync(
+        Task<ChatCompletion> GetChatCompletionsAsync(
             IEnumerable<IChatMessage> messages,
             float? temperature = null,
             int? maxToken = null,
             string[]? stopWords = null,
             CancellationToken? ct = default);
+
+        public class ChatCompletion
+        {
+            public IChatMessage? Message { get; set; }
+
+            public int? PromptTokens { get; set; }
+
+            public int? TotalTokens { get; set; }
+
+            public int? CompletionTokens { get; set; }
+        }
     }
 }

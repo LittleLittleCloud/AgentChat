@@ -19,7 +19,7 @@ namespace AgentChat.Core.Tests
         {
             // return the most recent message
             var lastMessage = conversation.LastOrDefault();
-            var reply = new Message(ChatRole.Assistant, lastMessage?.Content, Name);
+            var reply = new Message(Role.Assistant, lastMessage?.Content, Name);
 
             return Task.FromResult<IChatMessage>(reply);
         }
