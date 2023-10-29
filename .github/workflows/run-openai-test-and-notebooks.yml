@@ -1,14 +1,14 @@
 name: run-openai-test-and-notebooks
 
 on:
-  workflow_dispatch:
-  push:
+  pull_request:
     branches: [ "main" ]
 env:
   BUILD_CONFIGURATION: Release    # set this to the appropriate build configuration
 
 jobs:
   build:
+    environment: openai
     name: run-openai-test-and-notebooks
     runs-on: ubuntu-latest
     steps:
