@@ -4,7 +4,7 @@
     <Description>Helper package for AgentChat examples and notebooks</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
+	
   <ItemGroup>
     <ProjectReference Include="..\AgentChat.Core\AgentChat.Core.csproj" />
     <ProjectReference Include="..\AgentChat.OpenAI\AgentChat.OpenAI.csproj" />
