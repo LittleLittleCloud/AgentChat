@@ -32,6 +32,11 @@
 			  Pack="true"
 			  PackagePath="analyzers/dotnet/cs"
 			  Visible="false" />
+		<!-- Package the props file -->
+		<None Include="AgentChat.SourceGenerator.props"
+			  Pack="true"
+			  PackagePath="build"
+			  Visible="false" />
 	</ItemGroup>
 
 	<Target Name="GetDependencyTargetPaths">
