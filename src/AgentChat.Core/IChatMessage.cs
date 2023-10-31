@@ -2,14 +2,14 @@
 {
     public interface IChatMessage
     {
-        Role Role { get; }
+        Role Role { get; set; }
 
         // TODO
         // add image
 
-        string? Content { get; }
+        string? Content { get; set; }
 
-        string? From { get; }
+        string? From { get; set; }
     }
 
     /// <summary>
@@ -27,10 +27,10 @@
             From = from;
         }
 
-        public Role Role { get; }
+        public Role Role { get; set; }
 
-        public string? Content { get; }
+        public string? Content { get; set; }
 
-        public string? From { get; }
+        public string? From { get; set; }
     }
 }
