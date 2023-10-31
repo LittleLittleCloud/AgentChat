@@ -33,6 +33,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgentChat.OpenAI", "src\Age
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgentChat.Example.Share", "src\AgentChat.Example.Share\AgentChat.Example.Share.csproj", "{0B4538E4-987D-4160-BCDD-5282CD310AC8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentChat.OpenAI.Tests", "src\AgentChat.OpenAI.Tests\AgentChat.OpenAI.Tests.csproj", "{66E56CA5-E8E1-46CE-A54F-590217FE8E68}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -83,6 +85,10 @@ Global
 		{0B4538E4-987D-4160-BCDD-5282CD310AC8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0B4538E4-987D-4160-BCDD-5282CD310AC8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0B4538E4-987D-4160-BCDD-5282CD310AC8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66E56CA5-E8E1-46CE-A54F-590217FE8E68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66E56CA5-E8E1-46CE-A54F-590217FE8E68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66E56CA5-E8E1-46CE-A54F-590217FE8E68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66E56CA5-E8E1-46CE-A54F-590217FE8E68}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -97,6 +103,7 @@ Global
 		{A244F7F5-3ED2-4670-8225-44D949546451} = {C770B7CC-9AE7-4303-9F72-C309B656FA76}
 		{428AFC87-0152-47FE-A3F4-E73E5FF6EC17} = {23C921D0-52FB-4FB6-A796-DB61081CD6BF}
 		{0B4538E4-987D-4160-BCDD-5282CD310AC8} = {6E65C7DE-7867-419B-A623-08B0B9FCE340}
+		{66E56CA5-E8E1-46CE-A54F-590217FE8E68} = {23C921D0-52FB-4FB6-A796-DB61081CD6BF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0D84DF8B-B368-46F1-9250-6AD6EA4F5B75}

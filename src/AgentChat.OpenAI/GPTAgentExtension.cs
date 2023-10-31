@@ -95,7 +95,5 @@ round # {i++}";
                 roleInformation,
                 functionMap);
         }
-
-
     }
 }
