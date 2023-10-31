@@ -139,9 +139,17 @@ namespace AgentChat.OpenAI
 
         public string? From { get; set; }
 
-        public Role Role => this.msg.Role.ToRole();
+        public Role Role
+        {
+            get => this.msg.Role.ToRole();
+            set => this.msg.Role = value.ToChatRole();
+        }
 
-        public string? Content => this.msg.Content;
+        public string? Content
+        {
+            get => this.msg.Content;
+            set => this.msg.Content = value;
+        }
 
         public FunctionCall? FunctionCall => this.msg.FunctionCall;
 
