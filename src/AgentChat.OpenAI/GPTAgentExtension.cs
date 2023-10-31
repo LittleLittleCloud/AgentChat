@@ -72,6 +72,33 @@ round # {i++}";
             }
         }
 
+        public static IAgent CreateAgent(
+            this GPTInstruct gptInstruct,
+            string agentName,
+            string roleInformation,
+            float? temperature = null,
+            int? maxToken = null,
+            string[]? stopWords = null)
+        {
+            var anotherGPT = new GPTInstruct(
+                gptInstruct,
+                temperature: temperature,
+                maxToken: maxToken,
+                stopWords: stopWords);
+
+            IAgent agent = new ChatAgent(anotherGPT, agentName);
+
+            // add role information
+            agent = agent.CreatePreprocessAgent(agentName, (msgs, ct) =>
+            {
+                var systemMessage = new Message(Role.System, roleInformation, from: agentName);
+
+                return Task.FromResult(new[] { systemMessage }.Concat(msgs));
+            });
+
+            return agent;
+        }
+
 
         public static GPTAgent CreateAgent(
             this GPT gpt,
