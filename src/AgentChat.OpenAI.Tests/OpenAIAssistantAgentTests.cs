@@ -105,6 +105,9 @@ namespace AgentChat.OpenAI.Tests
             reply.From.Should().Be(assistant.Name);
             reply.Role.Should().BeEquivalentTo(Role.Assistant);
             reply.Content.Should().Contain("5");
+
+            // remove assistant
+            await client.RemoveAssistantAsync(assistant.ID!);
         }
     }
 }

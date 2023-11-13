@@ -94,7 +94,7 @@ namespace AgentChat.OpenAI
                         before: msgs.LastOrDefault()?.Id,
                         ct: ct);
                     var contentBuilder = new StringBuilder();
-                    foreach (var msg in newMessages)
+                    foreach (var msg in newMessages.Reverse())
                     {
                         foreach (var content in msg.Content ?? throw new Exception("content is null"))
                         {
