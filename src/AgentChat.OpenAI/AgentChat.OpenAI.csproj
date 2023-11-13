@@ -8,8 +8,8 @@
   </PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Azure.AI.OpenAI"
-						  Version="$(AzureOpenAIVersion)" />
+		<PackageReference Include="Azure.AI.OpenAI" Version="$(AzureOpenAIVersion)" />
+		<PackageReference Include="System.Text.Json" Version="6.0.0" />
 	</ItemGroup>
 
   <ItemGroup>

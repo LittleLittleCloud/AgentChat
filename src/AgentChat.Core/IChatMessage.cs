@@ -10,6 +10,8 @@
         string? Content { get; set; }
 
         string? From { get; set; }
+
+        AgentFunction? Function { get; set; }
     }
 
     /// <summary>
@@ -32,5 +34,7 @@
         public string? Content { get; set; }
 
         public string? From { get; set; }
+
+        public AgentFunction? Function { get; set;}
     }
 }
