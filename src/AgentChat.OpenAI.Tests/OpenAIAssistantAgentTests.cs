@@ -55,7 +55,7 @@ namespace AgentChat.OpenAI.Tests
                 roleInformation: "You are a helpful AI assistant",
                 useCodeInterpreter: true);
 
-            var reply = await assistant.SendMessageAsync("what's the 13th of fibonacci?", ct: default);
+            var reply = await assistant.SendMessageAsync("what's the 13th of fibonacci? Print the result in the end", ct: default);
             reply.From.Should().Be(assistant.Name);
             reply.Role.Should().BeEquivalentTo(Role.Assistant);
             reply.Content.Should().Contain("233");
