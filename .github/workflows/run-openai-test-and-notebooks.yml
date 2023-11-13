@@ -42,4 +42,5 @@ jobs:
         AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
         AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
         AZURE_GPT_35_MODEL_ID: ${{ secrets.AZURE_GPT_35_MODEL_ID }}
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       
