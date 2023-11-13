@@ -134,6 +134,35 @@ namespace AgentChat.OpenAI
             return responseBody ?? throw new Exception("fail to get assistant id");
         }
 
+        public static async Task<OpenAIAssistantObject> RetrieveAssistantAsync(
+            this OpenAIClient client,
+            string assistantId,
+            CancellationToken? ct = null)
+        {
+            var baseUrl = $"https://api.openai.com/v1/assistants/{assistantId}";
+            var postRequest = client.Pipeline.CreateRequest();
+            postRequest.Method = RequestMethod.Get;
+            postRequest.Uri.Reset(new Uri(baseUrl));
+            // remove all header
+            foreach (var header in postRequest.Headers)
+            {
+                postRequest.Headers.Remove(header.Name);
+            }
+            postRequest.Headers.Add("Content-Type", "application/json");
+            postRequest.Headers.Add("OpenAI-Beta", "assistants=v1");
+
+            var reply = await client.Pipeline.SendRequestAsync(postRequest, ct ?? CancellationToken.None);
+
+            if (reply.Status != 200)
+            {
+                throw new Exception($"fail to get assistant {assistantId}");
+            }
+
+            var responseBody = reply.Content.ToObjectFromJson<OpenAIAssistantObject>();
+
+            return responseBody ?? throw new Exception("fail to get assistant id");
+        }
+
         public static async Task<string> RemoveAssistantAsync(
             this OpenAIClient client,
             string assistantId,
