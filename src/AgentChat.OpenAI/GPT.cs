@@ -151,6 +151,36 @@ namespace AgentChat.OpenAI
             set => this.msg.Content = value;
         }
 
+        public AgentFunction? Function
+        {
+            get
+            {
+                if (this.msg.FunctionCall?.Name is string functionName && this.msg.FunctionCall?.Arguments is string arguments)
+                {
+                    return new AgentFunction
+                    {
+                        Name = functionName,
+                        Arguments = arguments,
+                    };
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            set
+            {
+                if (value is AgentFunction function)
+                {
+                    this.msg.FunctionCall = new FunctionCall(function.Name, function.Arguments);
+                }
+                else
+                {
+                    this.msg.FunctionCall = null;
+                }
+            }
+        }
+
         public FunctionCall? FunctionCall => this.msg.FunctionCall;
 
         public string? Name => this.msg.Name;

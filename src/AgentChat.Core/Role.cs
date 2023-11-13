@@ -19,6 +19,8 @@ namespace AgentChat
 
         public static Role System { get; } = new Role("system");
 
+        public static Role Function { get; } = new Role("function");
+
         public override string ToString()
         {
             return _name;
