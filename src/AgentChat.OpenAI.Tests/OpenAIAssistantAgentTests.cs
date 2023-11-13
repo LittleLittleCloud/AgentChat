@@ -58,7 +58,7 @@ namespace AgentChat.OpenAI.Tests
             var reply = await assistant.SendMessageAsync("what's the 13th of fibonacci?", ct: default);
             reply.From.Should().Be(assistant.Name);
             reply.Role.Should().BeEquivalentTo(Role.Assistant);
-            reply.Content.Should().Contain("144");
+            reply.Content.Should().Contain("233");
 
             // remove assistant
             await client.RemoveAssistantAsync(assistant.ID!);
