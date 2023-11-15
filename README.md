@@ -99,7 +99,7 @@ var heisenberg = gpt35.CreateAgent(
 var bob = gpt35.CreateAgent(
     name: "Bob",
     roleInformation: "You call SayName function.",
-    functionMap: new new Dictionary<FunctionDefinition, Func<string, Task<string>>>{
+    functionMap: new Dictionary<FunctionDefinition, Func<string, Task<string>>>{
         { sayNameFunction.SayNameFunction, sayNameFunction.SayNameWrapper }
     });
 
