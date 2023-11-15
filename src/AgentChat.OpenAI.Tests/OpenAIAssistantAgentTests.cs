@@ -36,10 +36,6 @@ namespace AgentChat.OpenAI.Tests
             reply.Role.Should().BeEquivalentTo(Role.Assistant);
             reply.Content.Should().Contain("4");
 
-            reply = await assistant.SendMessageAsync("I need to solve the equation 3x + 11 = 14. Can you help me?", ct: default);
-
-            this.output.WriteLine(reply.FormatMessage());
-
             // remove assistant
             await client.RemoveAssistantAsync(assistant.ID!);
         }
@@ -55,10 +51,10 @@ namespace AgentChat.OpenAI.Tests
                 roleInformation: "You are a helpful AI assistant",
                 useCodeInterpreter: true);
 
-            var reply = await assistant.SendMessageAsync("what's the 13th of fibonacci? Print the result in the end", ct: default);
+            var reply = await assistant.SendMessageAsync("Calculate the result of 1+2+3+...+100 and print the result", ct: default);
             reply.From.Should().Be(assistant.Name);
             reply.Role.Should().BeEquivalentTo(Role.Assistant);
-            reply.Content.Should().Contain("233");
+            reply.Content.Should().Contain("5050");
 
             // remove assistant
             await client.RemoveAssistantAsync(assistant.ID!);
