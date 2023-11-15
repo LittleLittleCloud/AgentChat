@@ -14,8 +14,10 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System;
 
+<#if (!String.IsNullOrEmpty(NameSpace)) {#>
 namespace <#=NameSpace#>
 {
+<#}#>
     public partial class <#=ClassName#>
     {
 <#foreach (var functionContract in FunctionContracts) {#>
@@ -92,7 +94,9 @@ namespace <#=NameSpace#>
         }
 <#}#>
     }
+<#if (!String.IsNullOrEmpty(NameSpace)) {#>
 }
+<#}#>
 
 <#+
 public string NameSpace {get; set;}

@@ -31,7 +31,7 @@ var bob = gpt35.CreateAgent(
     name: "Bob",
     roleInformation: "You are a helpful AI assistant.");
 
-var chatHistory = await alice.SendMessagesAsync(
+var chatHistory = await alice.SendMessageToAgentAsync(
     bob,
     "Hi, I am Alice.",
     maxRound: 1);
@@ -62,7 +62,7 @@ var group = new GroupChat(
     admin: alice,
     agents: new[] { bob, carol });
 
-var chatHistory = await alice.SendMessagesAsync(
+var chatHistory = await alice.SendMessageToGroupAsync(
     group,
     "Hi, I am Alice.",
     maxRound: 3);
@@ -103,7 +103,7 @@ var bob = gpt35.CreateAgent(
         { sayNameFunction.SayNameFunction, sayNameFunction.SayNameWrapper }
     });
 
-var chatHistory = await heisenberg.SendMessagesAsync(
+var chatHistory = await heisenberg.SendMessageToAgentAsync(
     bob,
     "Say, My, Name.",
     maxRound: 1);
