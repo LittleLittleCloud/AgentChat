@@ -3,6 +3,8 @@ using AgentChat.Example.Share;
 using FluentAssertions;
 using AgentChat.OpenAI;
 using Xunit.Abstractions;
+using System.Runtime.InteropServices;
+using Xunit;
 
 namespace AgentChat.DotnetInteractiveService.Tests
 {
@@ -76,6 +78,64 @@ Console.WriteLine(""Hello World"");
             (result as GPTChatMessage)?.FunctionCall?.Name.Should().Be(_function.InstallNugetPackagesFunction.Name);
             result?.Content.Should().Contain("Microsoft.ML");
             result?.Content.Should().Contain("Microsoft.ML.AutoML");
+        }
+
+        [Fact]
+        public async Task InteractiveService_InitializeTestAsync()
+        {
+            var cts = new CancellationTokenSource();
+            var isRunning = await _interactiveService.StartAsync(_workingDir, cts.Token);
+
+            isRunning.Should().BeTrue();
+
+            _interactiveService.IsRunning().Should().BeTrue();
+
+            var versionFormatString = string.Empty;
+
+            // test code snippet
+            var hello_world = @"
+Console.WriteLine(""hello world"");
+";
+
+            await this.TestCodeSnippet(_interactiveService, hello_world, "hello world");
+            await this.TestCodeSnippet(
+                _interactiveService,
+                code: @"
+Console.WriteLine(""hello world""
+",
+                expectedOutput: "Error: (2,32): error CS1026: ) expected");
+
+            await this.TestCodeSnippet(
+                service: _interactiveService,
+                code: "throw new Exception();",
+                expectedOutput: "Error: System.Exception: Exception of type 'System.Exception' was thrown");
+
+            // run the following test only on windows
+            // test power shell
+            // echo hello world
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                var ps = @"echo ""hello world""";
+                await this.TestPowershellCodeSnippet(_interactiveService, ps, "hello world");
+            }
+
+        }
+
+        private async Task TestPowershellCodeSnippet(InteractiveService service, string code, string expectedOutput)
+        {
+            var result = await service.SubmitPowershellCodeAsync(code, CancellationToken.None);
+            result.Should().StartWith(expectedOutput);
+        }
+
+        private async Task TestCodeSnippet(InteractiveService service, string code, string expectedOutput)
+        {
+            var result = await service.SubmitCSharpCodeAsync(code, CancellationToken.None);
+            result.Should().StartWith(expectedOutput);
+        }
+
+        private void Service_Output(object? sender, string e)
+        {
+            this._output.WriteLine(e);
         }
     }
 }
