@@ -62,7 +62,7 @@ namespace AgentChat.Core.Tests
             msgs.Last().From.Should().Be(bob.Name);
         }
 
-        [ApiKeyFact("AZURE_OPENAI_API_KEY")]
+        [ApiKeyFact("AZURE_OPENAI_API_KEY_1")]
         public async Task TwoAgentCodingTest()
         {
             var coder = Constant.GPT35.CreateAgent(
