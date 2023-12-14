@@ -1,6 +1,7 @@
 ﻿using AgentChat.Example.Share;
 using AgentChat.OpenAI;
 using FluentAssertions;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace AgentChat.Core.Tests
@@ -36,6 +37,7 @@ Question #{question_index}:
         }
 
         [ApiKeyFact("AZURE_OPENAI_API_KEY")]
+        [Trait("Category", "openai")]
         public async Task MathChat_End_To_End_Test()
         {
             var teacher = Constant.GPT35.CreateAgent(

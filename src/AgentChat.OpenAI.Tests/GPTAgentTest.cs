@@ -5,11 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace AgentChat.OpenAI.Tests
 {
     public partial class GPTAgentTest
     {
+        [Trait("Category", "openai")]
         [ApiKeyFact("AZURE_OPENAI_GPT35_INSTRUCT_API_KEY")]
         public async Task GPTInstructAgentTest()
         {

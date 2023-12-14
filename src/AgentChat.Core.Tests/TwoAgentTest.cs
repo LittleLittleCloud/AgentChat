@@ -3,6 +3,7 @@ using AgentChat.Example.Share;
 using AgentChat.OpenAI;
 using Azure.AI.OpenAI;
 using FluentAssertions;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace AgentChat.Core.Tests
@@ -39,6 +40,7 @@ namespace AgentChat.Core.Tests
         }
 
         [ApiKeyFact("AZURE_OPENAI_API_KEY")]
+        [Trait("Category", "openai")]
         public async Task TwoAgentChatTest()
         {
             var alice = Constant.GPT35.CreateAgent(
@@ -63,6 +65,7 @@ namespace AgentChat.Core.Tests
         }
 
         [ApiKeyFact("AZURE_OPENAI_API_KEY")]
+        [Trait("Category", "openai")]
         public async Task TwoAgentCodingTest()
         {
             var coder = Constant.GPT35.CreateAgent(

@@ -6,11 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace AgentChat.OpenAI.Tests
 {
     public class OpenAIExtensionTests
     {
+        [Trait("Category", "openai")]
         [ApiKeyFact]
         public async Task UploadAssistantFileTestAsync()
         {
@@ -22,6 +24,7 @@ namespace AgentChat.OpenAI.Tests
             reply.Should().Be(file);
         }
 
+        [Trait("Category", "openai")]
         [ApiKeyFact]
         public async Task CreateAssistantTestAsync()
         {
@@ -36,6 +39,7 @@ namespace AgentChat.OpenAI.Tests
             assistantId2.Should().BeEquivalentTo(assistant.Id);
         }
 
+        [Trait("Category", "openai")]
         [ApiKeyFact]
         public async Task CreateThreadTestAsync()
         {

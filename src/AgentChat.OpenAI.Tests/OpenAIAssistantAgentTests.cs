@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace AgentChat.OpenAI.Tests
@@ -19,6 +20,7 @@ namespace AgentChat.OpenAI.Tests
             this.output = output;
         }
 
+        [Trait("Category", "openai")]
         [ApiKeyFact]
         public async Task AssistantAgentHelloWorldTestAsync()
         {
@@ -40,6 +42,7 @@ namespace AgentChat.OpenAI.Tests
             await client.RemoveAssistantAsync(assistant.ID!);
         }
 
+        [Trait("Category", "openai")]
         [ApiKeyFact]
         public async Task AssistantAgentWithCodeInterpreterTestAsync()
         {
@@ -81,6 +84,7 @@ namespace AgentChat.OpenAI.Tests
             }
         }
 
+        [Trait("Category", "openai")]
         [ApiKeyFact]
         public async Task AssistantAgentFunctionCallTestAsync()
         {

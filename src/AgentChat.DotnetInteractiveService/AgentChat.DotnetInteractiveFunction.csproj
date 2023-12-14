@@ -18,9 +18,7 @@
 
 
 	<ItemGroup>
-		<ProjectReference Include="..\AgentChat.Core\AgentChat.Core.csproj" />
-		<ProjectReference Include="..\AgentChat.OpenAI\AgentChat.OpenAI.csproj" />
-		<ProjectReference Include="..\AgentChat.SourceGenerator\AgentChat.SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+		<PackageReference Include="Azure.AI.OpenAI" Version="$(AzureOpenAIVersion)" />
 	</ItemGroup>
 
 </Project>

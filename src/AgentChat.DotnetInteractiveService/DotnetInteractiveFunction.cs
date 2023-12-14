@@ -5,10 +5,12 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Azure.AI.OpenAI;
+using System.Text.Json;
 
 namespace AgentChat.DotnetInteractiveService
 {
-    public partial class DotnetInteractiveFunction : IDisposable
+    public class DotnetInteractiveFunction : IDisposable
     {
         private readonly InteractiveService? _interactiveService = null;
         private string? _notebookPath;
@@ -69,7 +71,6 @@ namespace AgentChat.DotnetInteractiveService
         /// Run existing dotnet code from message. Don't modify the code, run it as is.
         /// </summary>
         /// <param name="code">code.</param>
-        [FunctionAttribution]
         public async Task<string> RunCode(string code)
         {
             if (this._interactiveService == null)
@@ -116,7 +117,6 @@ namespace AgentChat.DotnetInteractiveService
         /// Install nuget packages.
         /// </summary>
         /// <param name="nugetPackages">nuget package to install.</param>
-        [FunctionAttribution]
         public async Task<string> InstallNugetPackages(string[] nugetPackages)
         {
             if (this._interactiveService == null)
@@ -173,6 +173,105 @@ namespace AgentChat.DotnetInteractiveService
             writeStream.Dispose();
         }
 
+        private class RunCodeSchema
+        {
+            public string code { get; set; } = string.Empty;
+        }
+
+        public Task<string> RunCodeWrapper(string arguments)
+        {
+            var schema = JsonSerializer.Deserialize<RunCodeSchema>(
+                arguments,
+                new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                });
+
+            return RunCode(schema!.code);
+        }
+
+        public FunctionDefinition RunCodeFunction
+        {
+            get => new FunctionDefinition
+            {
+                Name = @"RunCode",
+                Description = """
+Run existing dotnet code from message. Don't modify the code, run it as is.
+""",
+                Parameters = BinaryData.FromObjectAsJson(new
+                {
+                    Type = "object",
+                    Properties = new
+                    {
+                        code = new
+                        {
+                            Type = @"string",
+                            Description = @"code.",
+                        },
+                    },
+                    Required = new[]
+                    {
+                        "code",
+                    },
+                },
+                new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                })
+            };
+        }
+
+        private class InstallNugetPackagesSchema
+        {
+            public string[] nugetPackages { get; set; } = Array.Empty<string>();
+        }
+
+        public Task<string> InstallNugetPackagesWrapper(string arguments)
+        {
+            var schema = JsonSerializer.Deserialize<InstallNugetPackagesSchema>(
+                arguments,
+                new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                });
+
+            return InstallNugetPackages(schema!.nugetPackages);
+        }
+
+        public FunctionDefinition InstallNugetPackagesFunction
+        {
+            get => new FunctionDefinition
+            {
+                Name = @"InstallNugetPackages",
+                Description = """
+Install nuget packages.
+""",
+                Parameters = BinaryData.FromObjectAsJson(new
+                {
+                    Type = "object",
+                    Properties = new
+                    {
+                        nugetPackages = new
+                        {
+                            Type = @"array",
+                            Items = new
+                            {
+                                Type = @"string",
+                            },
+                            Description = @"nuget package to install.",
+                        },
+                    },
+                    Required = new[]
+                    {
+                        "nugetPackages",
+                    },
+                },
+                new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                })
+            };
+        }
         public void Dispose()
         {
             this._interactiveService?.Dispose();
