@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace AgentChat.OpenAI.Tests
 {
@@ -17,6 +18,7 @@ namespace AgentChat.OpenAI.Tests
             return $@"[Hi] {name}";
         }
 
+        [Trait("Category", "openai")]
         [ApiKeyFact("AZURE_OPENAI_API_KEY")]
         public async Task GPTEnd2EndTestAsync()
         {
@@ -49,6 +51,7 @@ namespace AgentChat.OpenAI.Tests
             replyMessage.Message?.Content.Should().Be("6");
         }
 
+        [Trait("Category", "openai")]
         [ApiKeyFact("AZURE_OPENAI_API_KEY")]
         public async Task GPTFunctionCallTestAsync()
         {
@@ -80,6 +83,7 @@ namespace AgentChat.OpenAI.Tests
             gptChatMessage.ChatMessage.FunctionCall?.Name.Should().Be("SayHi");
         }
 
+        [Trait("Category", "openai")]
         [ApiKeyFact("AZURE_OPENAI_GPT35_INSTRUCT_API_KEY")]
         public async Task GPTInstructEnd2EndTestAsync()
         {
