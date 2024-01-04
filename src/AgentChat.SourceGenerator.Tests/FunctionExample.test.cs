@@ -1,114 +1,131 @@
-﻿using ApprovalTests;
+﻿using System.Text.Json;
+using ApprovalTests;
 using ApprovalTests.Namers;
 using ApprovalTests.Reporters;
 using Azure.AI.OpenAI;
 using FluentAssertions;
-using System.Text.Json;
 using Xunit;
 
-namespace AgentChat.SourceGenerator.Tests
+namespace AgentChat.SourceGenerator.Tests;
+
+public class FunctionExample
 {
-    public class FunctionExample
+    private readonly FunctionExamples functionExamples = new();
+
+    private readonly JsonSerializerOptions jsonSerializerOptions = new()
     {
-        private readonly FunctionExamples functionExamples = new FunctionExamples();
-        private readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions
+        WriteIndented = true
+    };
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Fact]
+    public void Add_Test()
+    {
+        var args = new
         {
-            WriteIndented = true,
+            a = 1,
+            b = 2
         };
 
-        [Fact]
-        public void Add_Test()
+        VerifyFunction(functionExamples.AddWrapper, args, 3);
+        VerifyFunctionDefinition(functionExamples.AddFunction);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [Fact]
+    public async Task DictionaryToString_Test()
+    {
+        var args = new
         {
-            var args = new
+            xargs = new Dictionary<string, string>
             {
-                a = 1,
-                b = 2,
-            };
+                { "a", "1" },
+                { "b", "2" }
+            }
+        };
 
-            this.VerifyFunction(functionExamples.AddWrapper, args, 3);
-            this.VerifyFunctionDefinition(functionExamples.AddFunction);
-        }
+        await VerifyAsyncFunction(functionExamples.DictionaryToStringAsyncWrapper, args,
+            JsonSerializer.Serialize(args.xargs, jsonSerializerOptions));
+        VerifyFunctionDefinition(functionExamples.DictionaryToStringAsyncFunction);
+    }
 
-        [Fact]
-        public void Sum_Test()
+    /// <summary>
+    /// 
+    /// </summary>
+    [Fact]
+    public void Query_Test()
+    {
+        var args = new
         {
-            var args = new
-            {
-                args = new double[] { 1, 2, 3 },
-            };
+            query = "hello",
+            k = 3
+        };
 
-            this.VerifyFunction(functionExamples.SumWrapper, args, 6.0);
-            this.VerifyFunctionDefinition(functionExamples.SumFunction);
-        }
+        VerifyFunction(functionExamples.QueryWrapper, args, new[] { "hello", "hello", "hello" });
+        VerifyFunctionDefinition(functionExamples.QueryFunction);
+    }
 
-        [Fact]
-        public async Task DictionaryToString_Test()
+    /// <summary>
+    /// 
+    /// </summary>
+    [Fact]
+    public void Sum_Test()
+    {
+        var args = new
         {
-            var args = new
-            {
-                xargs = new Dictionary<string, string>
-                {
-                    { "a", "1" },
-                    { "b", "2" },
-                },
-            };
+            args = new double[] { 1, 2, 3 }
+        };
 
-            await this.VerifyAsyncFunction(functionExamples.DictionaryToStringAsyncWrapper, args, JsonSerializer.Serialize(args.xargs, jsonSerializerOptions));
-            this.VerifyFunctionDefinition(functionExamples.DictionaryToStringAsyncFunction);
-        }
+        VerifyFunction(functionExamples.SumWrapper, args, 6.0);
+        VerifyFunctionDefinition(functionExamples.SumFunction);
+    }
 
-        [Fact]
-        public async Task TopLevelFunctionExampleAddTestAsync()
+    /// <summary>
+    /// 
+    /// </summary>
+    [Fact]
+    public async Task TopLevelFunctionExampleAddTestAsync()
+    {
+        var example = new TopLevelStatementFunctionExample();
+
+        var args = new
         {
-            var example = new TopLevelStatementFunctionExample();
-            var args = new
-            {
-                a = 1,
-                b = 2,
-            };
+            a = 1,
+            b = 2
+        };
 
-            await this.VerifyAsyncFunction(example.AddWrapper, args, "3");
-        }
+        await VerifyAsyncFunction(example.AddWrapper, args, "3");
+    }
 
-        [Fact]
-        public void Query_Test()
+    private async Task VerifyAsyncFunction<T, U>(Func<string, Task<T>> func, U args, T expected)
+    {
+        var str = JsonSerializer.Serialize(args, jsonSerializerOptions);
+        var res = await func(str);
+        res.Should().BeEquivalentTo(expected);
+    }
+
+    private void VerifyFunction<T, U>(Func<string, T> func, U args, T expected)
+    {
+        var str = JsonSerializer.Serialize(args, jsonSerializerOptions);
+        var res = func(str);
+        res.Should().BeEquivalentTo(expected);
+    }
+
+    [UseReporter(typeof(DiffReporter))]
+    [UseApprovalSubdirectory("ApprovalTests")]
+    private void VerifyFunctionDefinition(FunctionDefinition function)
+    {
+        var func = new
         {
-            var args = new
-            {
-                query = "hello",
-                k = 3,
-            };
+            name = function.Name,
+            description = function.Description.Replace(Environment.NewLine, ","),
+            parameters = function.Parameters.ToObjectFromJson<object>(jsonSerializerOptions)
+        };
 
-            this.VerifyFunction(functionExamples.QueryWrapper, args, new[] { "hello", "hello", "hello" });
-            this.VerifyFunctionDefinition(functionExamples.QueryFunction);
-        }
-
-        [UseReporter(typeof(DiffReporter))]
-        [UseApprovalSubdirectory("ApprovalTests")]
-        private void VerifyFunctionDefinition(FunctionDefinition function)
-        {
-            var func = new
-            {
-                name = function.Name,
-                description = function.Description.Replace(Environment.NewLine, ","),
-                parameters = function.Parameters.ToObjectFromJson<object>(options: jsonSerializerOptions),
-            };
-
-            Approvals.Verify(JsonSerializer.Serialize(func, jsonSerializerOptions));
-        }
-
-        private void VerifyFunction<T, U>(Func<string, T> func, U args, T expected)
-        {
-            var str = JsonSerializer.Serialize(args, jsonSerializerOptions);
-            var res = func(str);
-            res.Should().BeEquivalentTo(expected);
-        }
-
-        private async Task VerifyAsyncFunction<T, U>(Func<string, Task<T>> func, U args, T expected)
-        {
-            var str = JsonSerializer.Serialize(args, jsonSerializerOptions);
-            var res = await func(str);
-            res.Should().BeEquivalentTo(expected);
-        }
+        Approvals.Verify(JsonSerializer.Serialize(func, jsonSerializerOptions));
     }
 }

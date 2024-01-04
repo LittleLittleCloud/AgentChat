@@ -2,37 +2,37 @@
 using System.IO;
 using System.Threading.Tasks;
 
-namespace AgentChat.Example.Share
+namespace AgentChat.Example.Share;
+
+public class Logger
 {
-    public class Logger
+    private readonly string outputDirectory;
+
+    public Logger(string outputDirectory)
     {
-        private string outputDirectory;
+        this.outputDirectory = outputDirectory;
 
-        public Logger(string outputDirectory)
+        if (!Directory.Exists(this.outputDirectory))
         {
-            this.outputDirectory = outputDirectory;
+            Directory.CreateDirectory(this.outputDirectory);
+        }
+    }
 
-            if (!System.IO.Directory.Exists(this.outputDirectory))
-            {
-                System.IO.Directory.CreateDirectory(this.outputDirectory);
-            }
+    public void Log(string message)
+    {
+        Console.WriteLine(message);
+    }
+
+    public async Task LogToFile(string relativePath, string content)
+    {
+        var path = Path.Combine(outputDirectory, relativePath);
+        var directory = Path.GetDirectoryName(path);
+
+        if (directory is not null && !Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
         }
 
-        public void Log(string message)
-        {
-            Console.WriteLine(message);
-        }
-
-        public async Task LogToFile(string relativePath, string content)
-        {
-            var path = System.IO.Path.Combine(this.outputDirectory, relativePath);
-            var directory = System.IO.Path.GetDirectoryName(path);
-            if (directory is not null && !System.IO.Directory.Exists(directory))
-            {
-                System.IO.Directory.CreateDirectory(directory);
-            }
-
-            File.WriteAllText(path, content);
-        }
+        await File.WriteAllTextAsync(path, content);
     }
 }

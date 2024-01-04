@@ -1,86 +1,79 @@
-﻿using Microsoft.DotNet.Interactive.Commands;
+﻿using System.Collections;
+using System.Collections.Immutable;
+using Microsoft.DotNet.Interactive;
+using Microsoft.DotNet.Interactive.Commands;
 using Microsoft.DotNet.Interactive.Connection;
 using Microsoft.DotNet.Interactive.Events;
-using Microsoft.DotNet.Interactive;
-using System.Collections;
-using System.Collections.Immutable;
 
-namespace AgentChat.DotnetInteractiveService
+namespace AgentChat.DotnetInteractiveService;
+
+public static class ObservableExtensions
 {
-    public static class ObservableExtensions
+    public static SubscribedList<T> ToSubscribedList<T>(this IObservable<T> source) => new(source);
+}
+
+public static class KernelExtensions
+{
+    private static Exception GetException(this CommandFailed commandFailedEvent) => new(commandFailedEvent.Message);
+
+    internal static async Task<KernelCommandResult> SendAndThrowOnCommandFailedAsync(
+        this Kernel kernel,
+        KernelCommand command,
+        CancellationToken cancellationToken)
     {
-        public static SubscribedList<T> ToSubscribedList<T>(this IObservable<T> source)
+        var result = await kernel.SendAsync(command, cancellationToken);
+        result.ThrowOnCommandFailed();
+        return result;
+    }
+
+    internal static void SetUpValueSharingIfSupported(this ProxyKernel proxyKernel)
+    {
+        var supportedCommands = proxyKernel.KernelInfo.SupportedKernelCommands;
+
+        if (supportedCommands.Any(d => d.Name == nameof(RequestValue)) &&
+            supportedCommands.Any(d => d.Name == nameof(SendValue)))
         {
-            return new SubscribedList<T>(source);
+            proxyKernel.UseValueSharing();
         }
     }
 
-    public static class KernelExtensions
+    private static void ThrowOnCommandFailed(this KernelCommandResult result)
     {
-        internal static void SetUpValueSharingIfSupported(this ProxyKernel proxyKernel)
+        var failedEvents = result.Events.OfType<CommandFailed>();
+
+        if (!failedEvents.Any())
         {
-            var supportedCommands = proxyKernel.KernelInfo.SupportedKernelCommands;
-            if (supportedCommands.Any(d => d.Name == nameof(RequestValue)) &&
-                supportedCommands.Any(d => d.Name == nameof(SendValue)))
-            {
-                proxyKernel.UseValueSharing();
-            }
+            return;
         }
 
-        internal static async Task<KernelCommandResult> SendAndThrowOnCommandFailedAsync(
-            this Kernel kernel,
-            KernelCommand command,
-            CancellationToken cancellationToken)
+        if (failedEvents.Skip(1).Any())
         {
-            var result = await kernel.SendAsync(command, cancellationToken);
-            result.ThrowOnCommandFailed();
-            return result;
+            var innerExceptions = failedEvents.Select(f => f.GetException());
+            throw new AggregateException(innerExceptions);
         }
 
-        private static void ThrowOnCommandFailed(this KernelCommandResult result)
-        {
-            var failedEvents = result.Events.OfType<CommandFailed>();
-            if (!failedEvents.Any())
-            {
-                return;
-            }
+        throw failedEvents.Single().GetException();
+    }
+}
 
-            if (failedEvents.Skip(1).Any())
-            {
-                var innerExceptions = failedEvents.Select(f => f.GetException());
-                throw new AggregateException(innerExceptions);
-            }
-            else
-            {
-                throw failedEvents.Single().GetException();
-            }
-        }
+public class SubscribedList<T> : IReadOnlyList<T>, IDisposable
+{
+    private readonly IDisposable _subscription;
 
-        private static Exception GetException(this CommandFailed commandFailedEvent)
-            => new Exception(commandFailedEvent.Message);
+    private ImmutableArray<T> _list = ImmutableArray<T>.Empty;
+
+    public SubscribedList(IObservable<T> source)
+    {
+        _subscription = source.Subscribe(x => _list = _list.Add(x));
     }
 
-    public class SubscribedList<T> : IReadOnlyList<T>, IDisposable
-    {
-        private ImmutableArray<T> _list = ImmutableArray<T>.Empty;
-        private readonly IDisposable _subscription;
+    public void Dispose() => _subscription.Dispose();
 
-        public SubscribedList(IObservable<T> source)
-        {
-            _subscription = source.Subscribe(x => _list = _list.Add(x));
-        }
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-        public IEnumerator<T> GetEnumerator()
-        {
-            return ((IEnumerable<T>)_list).GetEnumerator();
-        }
+    public IEnumerator<T> GetEnumerator() => ((IEnumerable<T>)_list).GetEnumerator();
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    public int Count => _list.Length;
 
-        public int Count => _list.Length;
-
-        public T this[int index] => _list[index];
-
-        public void Dispose() => _subscription.Dispose();
-    }
+    public T this[int index] => _list[index];
 }

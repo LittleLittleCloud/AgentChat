@@ -1,118 +1,120 @@
-﻿using Azure.AI.OpenAI;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Azure;
+using Azure.AI.OpenAI;
 using static AgentChat.IChatLLM;
 
-namespace AgentChat.OpenAI
+namespace AgentChat.OpenAI;
+
+public class GPTInstruct : IChatLLM
 {
-    public class GPTInstruct : IChatLLM
+    private readonly int _maxToken;
+
+    private readonly string _model;
+
+    private readonly string[] _stopWords;
+
+    private readonly float _temperature;
+
+    private readonly OpenAIClient _client;
+
+    public GPTInstruct(
+        OpenAIClient client,
+        string model,
+        float? temperature = null,
+        int? maxToken = null,
+        string[]? stopWords = null)
     {
-        private OpenAIClient _client;
-        private readonly string _model;
-        private readonly float _temperature;
-        private readonly int _maxToken;
-        private readonly string[] _stopWords;
+        _client = client;
+        _model = model;
+        _temperature = temperature ?? 0f;
+        _maxToken = maxToken ?? 1024;
+        _stopWords = stopWords ?? Array.Empty<string>();
+    }
 
-        public GPTInstruct(
-            OpenAIClient client,
-            string model,
-            float? temperature = null,
-            int? maxToken = null,
-            string[]? stopWords = null)
+    public GPTInstruct(
+        GPTInstruct other,
+        float? temperature = null,
+        int? maxToken = null,
+        string[]? stopWords = null)
+        : this(
+            other._client,
+            other._model,
+            temperature ?? other._temperature,
+            maxToken ?? other._maxToken,
+            stopWords ?? other._stopWords)
+    {
+    }
+
+    public async Task<ChatCompletion> GetChatCompletionsAsync(
+        IEnumerable<IChatMessage> messages,
+        float? temperature = null,
+        int? maxToken = null,
+        string[]? stopWords = null,
+        CancellationToken? ct = null)
+    {
+        var prompts = messages.Select(m => m.ToChatML()).ToList();
+        prompts.Add($"<|im_start|>{ChatRole.Assistant}{Environment.NewLine}");
+        var prompt = string.Join(Environment.NewLine, prompts);
+
+        var completionOption = new CompletionsOptions(new[] { prompt })
         {
-            this._client = client;
-            this._model = model;
-            this._temperature = temperature ?? 0f;
-            this._maxToken = maxToken ?? 1024;
-            this._stopWords = stopWords ?? Array.Empty<string>();
+            Temperature = temperature ?? _temperature,
+            MaxTokens = maxToken ?? _maxToken,
+            Echo = false
+        };
+        stopWords = stopWords ?? _stopWords;
+
+        foreach (var stopWord in stopWords.Concat(new[] { "<|im_end|>" }))
+        {
+            completionOption.StopSequences.Add(stopWord);
         }
 
-        public GPTInstruct(
-            GPTInstruct other,
-            float? temperature = null,
-            int? maxToken = null,
-            string[]? stopWords = null)
-            :this(
-                 other._client,
-                 other._model,
-                 temperature ?? other._temperature,
-                 maxToken ?? other._maxToken,
-                 stopWords ?? other._stopWords)
-        {
-        }
+        var response = await _client.GetCompletionsAsync(_model, completionOption, ct ?? CancellationToken.None);
 
-        public static GPTInstruct CreateFromOpenAI(
-            string apiKey,
-            string model,
-            float? temperature = null,
-            int? maxToken = null,
-            string[]? stopWords = null)
+        if (response.Value is Completions completions)
         {
-            var client = new OpenAIClient(apiKey);
-            return new GPTInstruct(client, model, temperature, maxToken, stopWords);
-        }
+            var completion = completions.Choices.First().Text;
+            var chatMessage = new Message(Role.Assistant, completion);
 
-        public static GPTInstruct CreateFromAzureOpenAI(
-            string deployModel,
-            string apiKey,
-            string endPoint,
-            float? temperature = null,
-            int? maxToken = null,
-            string[]? stopWords = null)
-        {
-            var client = new OpenAIClient(new Uri(endPoint), new Azure.AzureKeyCredential(apiKey));
-
-            return new GPTInstruct(client, deployModel, temperature, maxToken, stopWords);
-        }
-
-        public async Task<IChatLLM.ChatCompletion> GetChatCompletionsAsync(
-            IEnumerable<IChatMessage> messages,
-            float? temperature = null,
-            int? maxToken = null,
-            string[]? stopWords = null,
-            CancellationToken? ct = null)
-        {
-            var prompts = messages.Select(m => m.ToChatML()).ToList();
-            prompts.Add($"<|im_start|>{ChatRole.Assistant}{Environment.NewLine}");
-            var prompt = string.Join(Environment.NewLine, prompts);
-            var completionOption = new CompletionsOptions(new[] { prompt } )
+            var chatCompletion = new ChatCompletion
             {
-                Temperature = temperature ?? _temperature,
-                MaxTokens = maxToken ?? _maxToken,
-                Echo = false,
+                Message = chatMessage,
+                PromptTokens = completions.Usage.PromptTokens,
+                TotalTokens = completions.Usage.TotalTokens,
+                CompletionTokens = completions.Usage.CompletionTokens
             };
-            stopWords = stopWords ?? _stopWords;
-            
-            foreach(var stopWord in stopWords.Concat(new[] {"<|im_end|>"}))
-            {
-                completionOption.StopSequences.Add(stopWord);
-            }
 
-            var response = await _client.GetCompletionsAsync(_model, completionOption, ct ?? CancellationToken.None);
-        
-            if (response.Value is Completions completions)
-            {
-                var completion = completions.Choices.First().Text;
-                var chatMessage = new Message(Role.Assistant, completion);
-
-                var chatCompletion = new ChatCompletion
-                {
-                    Message = chatMessage,
-                    PromptTokens = completions.Usage.PromptTokens,
-                    TotalTokens = completions.Usage.TotalTokens,
-                    CompletionTokens = completions.Usage.CompletionTokens,
-                };
-
-                return chatCompletion;
-            }
-            else
-            {
-                throw new Exception("Invalid response");
-            }
+            return chatCompletion;
         }
+
+        throw new Exception("Invalid response");
+    }
+
+    public static GPTInstruct CreateFromAzureOpenAI(
+        string deployModel,
+        string apiKey,
+        string endPoint,
+        float? temperature = null,
+        int? maxToken = null,
+        string[]? stopWords = null)
+    {
+        var client = new OpenAIClient(new Uri(endPoint), new AzureKeyCredential(apiKey));
+
+        return new GPTInstruct(client, deployModel, temperature, maxToken, stopWords);
+    }
+
+    public static GPTInstruct CreateFromOpenAI(
+        string apiKey,
+        string model,
+        float? temperature = null,
+        int? maxToken = null,
+        string[]? stopWords = null)
+    {
+        var client = new OpenAIClient(apiKey);
+        return new GPTInstruct(client, model, temperature, maxToken, stopWords);
     }
 }

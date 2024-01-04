@@ -6,71 +6,62 @@ using FluentAssertions;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace AgentChat.Core.Tests
+namespace AgentChat.Core.Tests;
+
+public partial class TwoAgentTest
 {
-    public partial class TwoAgentTest
+    private readonly ITestOutputHelper _output;
+
+    public TwoAgentTest(ITestOutputHelper output)
     {
-        private readonly ITestOutputHelper _output;
+        _output = output;
+    }
 
-        public TwoAgentTest(ITestOutputHelper output)
-        {
-            _output = output;
-        }
+    [FunctionAttribution]
+    public async Task<string> Greeting(string msg) => "No code available";
 
-        /// <summary>
-        /// say name
-        /// </summary>
-        /// <param name="name">name.</param>
-        [FunctionAttribution]
-        public async Task<string> SayName(string name)
-        {
-            return $"SayName: {name}";
-        }
+    /// <summary>
+    ///     say name
+    /// </summary>
+    /// <param name="name">name.</param>
+    [FunctionAttribution]
+    public async Task<string> SayName(string name) => $"SayName: {name}";
 
-        [FunctionAttribution]
-        public async Task<string> Greeting(string msg)
-        {
-            return "No code available";
-        }
+    [FunctionAttribution]
+    public async Task<string> TaskComplete(string msg) => "[COMPLETE]";
 
-        [FunctionAttribution]
-        public async Task<string> TaskComplete(string msg)
-        {
-            return "[COMPLETE]";
-        }
+    [ApiKeyFact("AZURE_OPENAI_API_KEY")]
+    [Trait("Category", "openai")]
+    public async Task TwoAgentChatTest()
+    {
+        var alice = Constant.GPT35.CreateAgent(
+            "Alice",
+            @"You are a helpful AI assistant");
 
-        [ApiKeyFact("AZURE_OPENAI_API_KEY")]
-        [Trait("Category", "openai")]
-        public async Task TwoAgentChatTest()
-        {
-            var alice = Constant.GPT35.CreateAgent(
-                name: "Alice",
-                roleInformation: $@"You are a helpful AI assistant");
+        var bob = Constant.GPT35.CreateAgent(
+            "Bob",
+            @"You call SayName function",
+            functionMap: new Dictionary<FunctionDefinition, Func<string, Task<string>>>
+            {
+                { SayNameFunction, SayNameWrapper }
+            });
 
-            var bob = Constant.GPT35.CreateAgent(
-                name: "Bob",
-                roleInformation: $@"You call SayName function",
-                functionMap: new Dictionary<FunctionDefinition, Func<string, Task<string>>>
-                {
-                    { this.SayNameFunction, this.SayNameWrapper },
-                });
+        var msgs = await alice.SendMessageToAgentAsync(bob, "hey what's your name", 1);
 
-            var msgs = await alice.SendMessageToAgentAsync(bob, "hey what's your name", maxRound: 1);
+        msgs.Should().HaveCount(2);
+        msgs.First().Content.Should().Be("hey what's your name");
+        msgs.First().From.Should().Be(alice.Name);
+        msgs.Last().Content.Should().Be("SayName: Bob");
+        msgs.Last().From.Should().Be(bob.Name);
+    }
 
-            msgs.Should().HaveCount(2);
-            msgs.First().Content.Should().Be("hey what's your name");
-            msgs.First().From.Should().Be(alice.Name);
-            msgs.Last().Content.Should().Be("SayName: Bob");
-            msgs.Last().From.Should().Be(bob.Name);
-        }
-
-        [ApiKeyFact("AZURE_OPENAI_API_KEY")]
-        [Trait("Category", "openai")]
-        public async Task TwoAgentCodingTest()
-        {
-            var coder = Constant.GPT35.CreateAgent(
-                name: "Coder",
-                roleInformation: @"You act as dotnet coder, you write dotnet script to resolve task.
+    [ApiKeyFact("AZURE_OPENAI_API_KEY")]
+    [Trait("Category", "openai")]
+    public async Task TwoAgentCodingTest()
+    {
+        var coder = Constant.GPT35.CreateAgent(
+            "Coder",
+            @"You act as dotnet coder, you write dotnet script to resolve task.
 -workflow-
 write code
 
@@ -103,24 +94,28 @@ The error is caused by xxx. Here's the fix code
 ```csharp
 xxx
 ```",
-                temperature: 0,
-                functionMap: new Dictionary<FunctionDefinition, Func<string, Task<string>>>
-                {
-                    { TaskCompleteFunction, TaskCompleteWrapper },
-                });
+            0,
+            functionMap: new Dictionary<FunctionDefinition, Func<string, Task<string>>>
+            {
+                { TaskCompleteFunction, TaskCompleteWrapper }
+            });
 
-            var workDir = Path.Combine(Path.GetTempPath(), "InteractiveService");
-            if (!Directory.Exists(workDir))
-                Directory.CreateDirectory(workDir);
-            var service = new InteractiveService(workDir);
-            using var dotnetInteractiveFunctions = new DotnetInteractiveFunction(service);
+        var workDir = Path.Combine(Path.GetTempPath(), "InteractiveService");
 
-            // this function is used to fix invalid json returned by GPT-3
-            var fixInvalidJsonFunction = new FixInvalidJsonFunctionWrapper(Constant.GPT35);
+        if (!Directory.Exists(workDir))
+        {
+            Directory.CreateDirectory(workDir);
+        }
 
-            var runner = Constant.GPT35.CreateAgent(
-                name: "Runner",
-                roleInformation: @"you act as dotnet runner, you run dotnet script and install nuget packages. Here's the workflow you follow:
+        var service = new InteractiveService(workDir);
+        using var dotnetInteractiveFunctions = new DotnetInteractiveFunction(service);
+
+        // this function is used to fix invalid json returned by GPT-3
+        var fixInvalidJsonFunction = new FixInvalidJsonFunctionWrapper(Constant.GPT35);
+
+        var runner = Constant.GPT35.CreateAgent(
+            "Runner",
+            @"you act as dotnet runner, you run dotnet script and install nuget packages. Here's the workflow you follow:
 -workflow-
 if code_is_available
     call run_code
@@ -131,50 +126,58 @@ if nuget_packages_is_available
 for any other case
     call greeting
 -end-",
-                temperature: 0,
-                functionMap: new Dictionary<FunctionDefinition, Func<string, Task<string>>> {
-                    { dotnetInteractiveFunctions.RunCodeFunction, fixInvalidJsonFunction.FixInvalidJsonWrapper(dotnetInteractiveFunctions.RunCodeWrapper) },
-                    { dotnetInteractiveFunctions.InstallNugetPackagesFunction, dotnetInteractiveFunctions.InstallNugetPackagesWrapper },
-                    { this.GreetingFunction, this.GreetingWrapper },
-                });
-
-            // start kenel
-            await service.StartAsync(workDir, default);
-
-            // test runner
-            var msg = await runner.SendMessageAsync("hey");
-            msg.Content.Should().Be("No code available");
-
-            msg = await runner.SendMessageAsync("```csharp\nConsole.WriteLine(\"hello world\");\n```");
-            msg.Content.Should().StartWith("hello world");
-
-            msg = await runner.SendMessageAsync("```nuget\nMicrosoft.ML\n```");
-            msg.Content.Should().StartWith("Installed nuget packages:");
-
-            // use runner agent to auto-reply message from coder
-            var userAgent = runner.CreateAutoReplyAgent("User", async (msgs, ct) =>
+            0,
+            functionMap: new Dictionary<FunctionDefinition, Func<string, Task<string>>>
             {
-                // if last message contains "COMPLETE", stop sending messages to runner agent and fall back to user agent
-                if (msgs.Last().Content?.Contains("COMPLETE") is true)
-                    return new Message(Role.User, IChatMessageExtension.TERMINATE, from: "User");
-
-                // otherwise, send message to runner agent to either run code or install nuget packages and get the reply
-                return await runner.SendMessageAsync(msgs.Last());
+                {
+                    dotnetInteractiveFunctions.RunCodeFunction,
+                    fixInvalidJsonFunction.FixInvalidJsonWrapper(dotnetInteractiveFunctions.RunCodeWrapper)
+                },
+                {
+                    dotnetInteractiveFunctions.InstallNugetPackagesFunction,
+                    dotnetInteractiveFunctions.InstallNugetPackagesWrapper
+                },
+                { GreetingFunction, GreetingWrapper }
             });
 
-            var chatHistory = await userAgent.SendMessageToAgentAsync(
-                coder,
-                "what's the 10th of fibonacci? Print the question and result in the end.",
-                maxRound: 10);
+        // start kenel
+        await service.StartAsync(workDir, default);
 
-            // print chat history
-            foreach (var message in chatHistory)
+        // test runner
+        var msg = await runner.SendMessageAsync("hey");
+        msg.Content.Should().Be("No code available");
+
+        msg = await runner.SendMessageAsync("```csharp\nConsole.WriteLine(\"hello world\");\n```");
+        msg.Content.Should().StartWith("hello world");
+
+        msg = await runner.SendMessageAsync("```nuget\nMicrosoft.ML\n```");
+        msg.Content.Should().StartWith("Installed nuget packages:");
+
+        // use runner agent to auto-reply message from coder
+        var userAgent = runner.CreateAutoReplyAgent("User", async (msgs, ct) =>
+        {
+            // if last message contains "COMPLETE", stop sending messages to runner agent and fall back to user agent
+            if (msgs.Last().Content?.Contains("COMPLETE") is true)
             {
-                _output.WriteLine(message.FormatMessage());
+                return new Message(Role.User, IChatMessageExtension.TERMINATE, "User");
             }
 
-            // last message should be terminate message
-            chatHistory.Last().IsGroupChatTerminateMessage().Should().BeTrue();
+            // otherwise, send message to runner agent to either run code or install nuget packages and get the reply
+            return await runner.SendMessageAsync(msgs.Last());
+        });
+
+        var chatHistory = await userAgent.SendMessageToAgentAsync(
+            coder,
+            "what's the 10th of fibonacci? Print the question and result in the end.",
+            10);
+
+        // print chat history
+        foreach (var message in chatHistory)
+        {
+            _output.WriteLine(message.FormatMessage());
         }
+
+        // last message should be terminate message
+        chatHistory.Last().IsGroupChatTerminateMessage().Should().BeTrue();
     }
 }
