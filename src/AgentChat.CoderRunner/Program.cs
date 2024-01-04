@@ -1,22 +1,22 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using Azure.AI.OpenAI;
+
 using System.Text;
+using AgentChat;
 using AgentChat.DotnetInteractiveService;
 using AgentChat.Example.Share;
-using AgentChat;
 using AgentChat.OpenAI;
+using Azure.AI.OpenAI;
 
 var workDir = Path.Combine(Path.GetTempPath(), "InteractiveService");
 
 // remove workDir if exists
 if (Directory.Exists(workDir))
 {
-    Directory.Delete(workDir, recursive: true);
+    Directory.Delete(workDir, true);
 }
 
 // create workDir
 Directory.CreateDirectory(workDir);
-
 
 using var service = new InteractiveService(workDir);
 await service.StartAsync(workDir, default);
@@ -25,8 +25,8 @@ using var dotnetInteractiveFunction = new DotnetInteractiveFunction(service);
 var fixInvalidJsonFunction = new FixInvalidJsonFunctionWrapper(Constant.GPT35);
 
 var coder = Constant.GPT35.CreateAgent(
-        name: "Coder",
-        roleInformation: @"You act as dotnet coder, you write dotnet script to resolve tasks.
+    "Coder",
+    @"You act as dotnet coder, you write dotnet script to resolve tasks.
 Here's the workflow you follow:
 -workflow-
 if no_current_step
@@ -69,8 +69,8 @@ xxx
 ");
 
 var runner = Constant.GPT35.CreateAgent(
-        name: "Runner",
-        roleInformation: @"You act as dotnet runner, you run dotnet script and install nuget packages. Here's the workflow you follow:
+    "Runner",
+    @"You act as dotnet runner, you run dotnet script and install nuget packages. Here's the workflow you follow:
 -workflow-
 if code_is_available_from_latest_message
     if nuget_packages_is_available_from_latest_message
@@ -89,16 +89,20 @@ Here are some examples for run_code_from_latest_message:
 Here are some examples for install_nuget_packages:
 - install_nuget_packages // nuget packages to install
 ",
-        functionMap: new Dictionary<FunctionDefinition, Func<string, Task<string>>>
+    functionMap: new Dictionary<FunctionDefinition, Func<string, Task<string>>>
+    {
         {
-            { dotnetInteractiveFunction.RunCodeFunction, fixInvalidJsonFunction.FixInvalidJsonWrapper(dotnetInteractiveFunction.RunCodeWrapper) },
-            { dotnetInteractiveFunction.InstallNugetPackagesFunction, dotnetInteractiveFunction.InstallNugetPackagesWrapper },
-        });
+            dotnetInteractiveFunction.RunCodeFunction,
+            fixInvalidJsonFunction.FixInvalidJsonWrapper(dotnetInteractiveFunction.RunCodeWrapper)
+        },
+        { dotnetInteractiveFunction.InstallNugetPackagesFunction, dotnetInteractiveFunction.InstallNugetPackagesWrapper }
+    });
 
 var groupChatFunction = new GroupChatFunction();
+
 var admin = Constant.GPT35.CreateAgent(
-    name: "Admin",
-    roleInformation: @"You act as group admin that lead other agents to resolve task together. Here's the workflow you follow:
+    "Admin",
+    @"You act as group admin that lead other agents to resolve task together. Here's the workflow you follow:
 -workflow-
 if all_steps_are_resolved
     terminate_chat
@@ -127,14 +131,18 @@ var groupChat = new GroupChat(
     new[]
     {
         coder,
-        runner,
+        runner
     });
 
 admin.AddInitializeMessage("Welcome to the group chat! Work together to resolve my task.", groupChat);
 coder.AddInitializeMessage("Hey I'm Coder", groupChat);
 runner.AddInitializeMessage("Hey I'm Runner", groupChat);
-admin.AddInitializeMessage($"The link to mlnet repo is: https://github.com/dotnet/machinelearning. you don't need a token to use github pr api. Make sure to include a User-Agent header, otherwise github will reject it.", groupChat);
-admin.AddInitializeMessage(@$"Here's the workflow for this group chat
+
+admin.AddInitializeMessage(
+    "The link to mlnet repo is: https://github.com/dotnet/machinelearning. you don't need a token to use github pr api. Make sure to include a User-Agent header, otherwise github will reject it.",
+    groupChat);
+
+admin.AddInitializeMessage(@"Here's the workflow for this group chat
 -groupchat workflow-
 if all_steps_are_resolved
     admin_terminate_chat
@@ -149,13 +157,16 @@ else
     coder_fix_code_error
 ", groupChat);
 
-var conversation = await admin.SendMessageToGroupAsync(groupChat, "Here's the first step to resolve: Send a GET request to the GitHub API to retrieve the list of pull requests for the mlnet repo.", 30, false);
+var conversation = await admin.SendMessageToGroupAsync(groupChat,
+    "Here's the first step to resolve: Send a GET request to the GitHub API to retrieve the list of pull requests for the mlnet repo.",
+    30);
 
 // log conversation to chat_history.txt
-if(conversation is not null)
+if (conversation is not null)
 {
     var sb = new StringBuilder();
-    foreach(var message in conversation)
+
+    foreach (var message in conversation)
     {
         var fmtMsg = message.FormatMessage();
         sb.AppendLine(fmtMsg);

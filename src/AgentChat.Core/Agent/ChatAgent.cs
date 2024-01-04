@@ -1,40 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AgentChat
+namespace AgentChat;
+
+/// <summary>
+///     A simple chat agent that uses <see cref="IChatLLM" /> to generate reply message.
+/// </summary>
+public class ChatAgent : IAgent
 {
-    /// <summary>
-    /// A simple chat agent that uses <see cref="IChatLLM"/> to generate reply message.
-    /// </summary>
-    public class ChatAgent : IAgent
+    public IChatLLM ChatLLM { get; }
+
+    public ChatAgent(
+        IChatLLM chatLLM,
+        string name)
     {
-        public ChatAgent(
-            IChatLLM chatLLM,
-            string name)
+        ChatLLM = chatLLM;
+        Name = name;
+    }
+
+    public string Name { get; }
+
+    public async Task<IChatMessage> CallAsync(IEnumerable<IChatMessage> conversation, CancellationToken ct = default)
+    {
+        var reply = await ChatLLM.GetChatCompletionsAsync(conversation, ct: ct);
+
+        if (reply.Message is IChatMessage msg)
         {
-            ChatLLM = chatLLM;
-            Name = name;
+            msg.From = Name;
+
+            return msg;
         }
 
-        public string Name { get; }
-
-        public IChatLLM ChatLLM { get; }
-
-        public async Task<IChatMessage> CallAsync(IEnumerable<IChatMessage> conversation, CancellationToken ct = default)
-        {
-            var reply = await ChatLLM.GetChatCompletionsAsync(conversation, ct: ct);
-
-            if (reply.Message is IChatMessage msg)
-            {
-                msg.From = Name;
-
-                return msg;
-            }
-
-            throw new Exception("ChatLLM did not return a valid message.");
-        }
+        throw new Exception("ChatLLM did not return a valid message.");
     }
 }

@@ -1,20 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace AgentChat
+namespace AgentChat;
+
+[AttributeUsage(AttributeTargets.Method, Inherited = false)]
+public class FunctionAttribution : Attribute
 {
-    [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-    public class FunctionAttribution : Attribute
+    public string? FunctionName { get; }
+
+    public string? Description { get; }
+
+    public FunctionAttribution(string? functionName = null, string? description = null)
     {
-        public string? FunctionName { get; }
-
-        public string? Description { get; }
-
-        public FunctionAttribution(string? functionName = null, string? description = null)
-        {
-            FunctionName = functionName;
-            Description = description;
-        }
+        FunctionName = functionName;
+        Description = description;
     }
 }

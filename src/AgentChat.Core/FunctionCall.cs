@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿namespace AgentChat;
 
-namespace AgentChat
+public class AgentFunction
+
 {
-    public class AgentFunction
+    public string? Name { get; set; }
 
-    {
-        public string? Name { get; set; }
-
-        public string? Arguments { get; set; }
-    }
+    public string? Arguments { get; set; }
 }
