@@ -15,9 +15,29 @@ using Newtonsoft.Json;
 
 namespace AgentChat.SourceGenerator;
 
-public static class DiagnosticHelper
+public static class GeneratorHelper
 {
     public static string LogName(this SyntaxNode node) => node.ToString().Substring(0, Math.Min(50, node.ToString().Length));
+
+    public static string? GetNamespace(this ClassDeclarationSyntax classDeclaration)
+    {
+        // Starting with the parent of the class declaration,
+        // walk up the syntax tree until finding a namespace declaration or the root.
+        var current = classDeclaration.Parent;
+        while (current != null)
+        {
+            // Check if the current syntax node is a NamespaceDeclarationSyntax
+            if (current is BaseNamespaceDeclarationSyntax namespaceDeclaration)
+            {
+                // Namespace found, return its fully qualified name
+                return namespaceDeclaration.Name.ToString();
+            }
+            // Move to the next parent
+            current = current.Parent;
+        }
+        // If no namespace declaration is found, the class is in the global namespace
+        return null; // Or "global" or whatever represents the global namespace in your context
+    }
 }
 
 [Generator]
@@ -52,6 +72,8 @@ public class FunctionCallGenerator : IIncrementalGenerator
             return generateFunctionDefinitionContract;
         });
 
+        
+
         bool IsNodeGood(SyntaxNode node, CancellationToken ct)
         {
             if (node is not ClassDeclarationSyntax classDeclarationSyntax)
@@ -66,16 +88,9 @@ public class FunctionCallGenerator : IIncrementalGenerator
                 return false;
             }
 
-            /* Don't exclude top level classes
-            if (classDeclarationSyntax.Parent is not NamespaceDeclarationSyntax nameSpace)
-            {
-                Trace.WriteLine($"Node {node.LogName()} doesn't have a parent namespace");
-                return false;
-            }*/
-
             if (!classDeclarationSyntax.Members.Any(HasFunctionAttributionAttribute))
             {
-                Trace.WriteLine($"Node {node.LogName()} doesn't have any members with a FunctionAttribution attribute");
+                //Trace.WriteLine($"Node {node.LogName()} doesn't have any members with a FunctionAttribution attribute");
                 return false;
             }
 
@@ -98,12 +113,14 @@ public class FunctionCallGenerator : IIncrementalGenerator
                         throw new Exception("Node is not ClassDeclarationSyntax");
                     }
 
-                    var fullClassName = $"{classDeclarationSyntax.Identifier}";
 
-                    if (classDeclarationSyntax.Parent is NamespaceDeclarationSyntax nameSpace)
-                    {
-                        fullClassName = $"{nameSpace.Name}.{classDeclarationSyntax.Identifier}";
-                    }
+                    var classNamespace = classDeclarationSyntax.GetNamespace();
+                    var fullClassName = string.IsNullOrEmpty(classNamespace) 
+                        ? $"{classDeclarationSyntax.Identifier}"
+                        : $"{classNamespace}.{classDeclarationSyntax.Identifier}";
+
+                    Trace.WriteLine($"🤖 Namespace:{classNamespace} Class:{fullClassName}");
+
 
                     // collect methods that has FunctionAttribution attribute
                     var methodDeclarationSyntaxes = classDeclarationSyntax.Members.Where(HasFunctionAttributionAttribute)
@@ -112,12 +129,12 @@ public class FunctionCallGenerator : IIncrementalGenerator
 
                     var functionContracts = methodDeclarationSyntaxes.Select(method => CreateFunctionContract(method!)).ToArray();
 
-                    Trace.WriteLine($"Class: {fullClassName}");
+                    /*Trace.WriteLine($"Class: {fullClassName}");
 
                     foreach (var funcc in functionContracts)
                     {
                         Trace.WriteLine($"\tFunction: {funcc.Name}");
-                    }
+                    }*/
 
                     return (fullClassName, classDeclarationSyntax, functionContracts);
                 })
@@ -136,11 +153,10 @@ public class FunctionCallGenerator : IIncrementalGenerator
                 foreach (var group in groups)
                 {
                     var functionContracts = group.SelectMany(item => item.functionContracts!).ToArray();
-                    var className = group.First().classDeclarationSyntax!.Identifier.ToString();
-
-                    var namespaceName =
-                        group.First().classDeclarationSyntax!.Parent is NamespaceDeclarationSyntax namespaceDeclarationSyntax ?
-                            namespaceDeclarationSyntax.Name.ToString() : string.Empty;
+                    var classDeclarationSyntax = group.First().classDeclarationSyntax;
+                    var className = classDeclarationSyntax!.Identifier.ToString();
+                    var classNamespace = classDeclarationSyntax.GetNamespace();
+                 
 
                     foreach (var funcc in functionContracts)
                     {
@@ -150,7 +166,7 @@ public class FunctionCallGenerator : IIncrementalGenerator
 
                     var functionTT = new FunctionCallTemplate
                     {
-                        NameSpace = namespaceName,
+                        NameSpace = classNamespace ?? string.Empty,
                         ClassName = className,
                         FunctionContracts = functionContracts.ToArray()
                     };
@@ -319,7 +335,7 @@ public class FunctionCallGenerator : IIncrementalGenerator
         {
             if (attribute.Name is IdentifierNameSyntax { Identifier.Text: FUNCTION_CALL_ATTRIBUTION_NAME } nameSyntax)
             {
-                Trace.WriteLine($"FUNCTION: {member.ToString()} {nameSyntax}");
+                //Trace.WriteLine($"FUNCTION: {member.ToString()} {nameSyntax}");
                 return true;
             }
         }

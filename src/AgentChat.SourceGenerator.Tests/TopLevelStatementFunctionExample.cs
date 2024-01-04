@@ -3,7 +3,7 @@
 /// <summary>
 /// 
 /// </summary>
-public class TopLevelStatementFunctionExample
+public partial class TopLevelStatementFunctionExample
 {
     /// <summary>
     /// 

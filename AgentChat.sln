@@ -33,7 +33,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgentChat.OpenAI", "src\Age
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgentChat.Example.Share", "src\AgentChat.Example.Share\AgentChat.Example.Share.csproj", "{0B4538E4-987D-4160-BCDD-5282CD310AC8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgentChat.OpenAI.Tests", "src\AgentChat.OpenAI.Tests\AgentChat.OpenAI.Tests.csproj", "{66E56CA5-E8E1-46CE-A54F-590217FE8E68}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AgentChat.OpenAI.Tests", "src\AgentChat.OpenAI.Tests\AgentChat.OpenAI.Tests.csproj", "{66E56CA5-E8E1-46CE-A54F-590217FE8E68}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C6BEB946-6ADA-407F-A279-B567BB2F7B8A}"
+	ProjectSection(SolutionItems) = preProject
+		global.json = global.json
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
