@@ -1,3 +1,6 @@
+# This repo is archived
+Please use the official [AutoGen.Net](https://microsoft.github.io/autogen-for-net/)
+
 # An unofficial implementation of AutoGen for dotnet
 
 This repo contains an unofficial implementation of AutoGen for dotnet. It is a library that allows you to build a group chat bot that can help you to resolve tasks by writing and running code.
