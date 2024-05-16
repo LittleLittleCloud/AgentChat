@@ -1,41 +1,39 @@
-﻿using Azure.AI.OpenAI;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
-namespace AgentChat.OpenAI
+namespace AgentChat.OpenAI;
+
+public class OpenAISubmitToolOutputObject
 {
-    public class OpenAISubmitToolOutputObject
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = "submit_tool_outputs";
+
+    [JsonPropertyName("submit_tool_outputs")]
+    public SubmitToolOutputsObject? SubmitToolOutputs { get; set; }
+
+    public class SubmitToolOutputsObject
     {
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = "submit_tool_outputs";
+        [JsonPropertyName("tool_calls")]
+        public ToolCallObject[]? ToolCalls { get; set; }
 
-        [JsonPropertyName("submit_tool_outputs")]
-        public SubmitToolOutputsObject? SubmitToolOutputs { get; set; }
-
-        public class SubmitToolOutputsObject
+        public class FunctionCallObject
         {
-            [JsonPropertyName("tool_calls")]
-            public ToolCallObject[]? ToolCalls { get; set; }
+            [JsonPropertyName("name")]
+            public string? Name { get; set; }
 
-            public class ToolCallObject
-            {
-                [JsonPropertyName("id")]
-                public string? Id { get; set; }
+            [JsonPropertyName("arguments")]
+            public string? Arguments { get; set; }
+        }
 
-                [JsonPropertyName("type")]
-                public string Type { get; set; } = "function";
+        public class ToolCallObject
+        {
+            [JsonPropertyName("id")]
+            public string? Id { get; set; }
 
-                [JsonPropertyName("function")]
-                public FunctionCallObject? Function { get; set; }
-            }
+            [JsonPropertyName("type")]
+            public string Type { get; set; } = "function";
 
-            public class FunctionCallObject
-            {
-                [JsonPropertyName("name")]
-                public string? Name { get; set; }
-
-                [JsonPropertyName("arguments")]
-                public string? Arguments { get; set; }
-            }
+            [JsonPropertyName("function")]
+            public FunctionCallObject? Function { get; set; }
         }
     }
 }

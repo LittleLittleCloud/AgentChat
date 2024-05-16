@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
 	  <LangVersion>preview</LangVersion>
 	  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 	<RootNamespace>AgentChat.OpenAI</RootNamespace>
@@ -9,7 +9,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Azure.AI.OpenAI" Version="$(AzureOpenAIVersion)" />
-		<PackageReference Include="System.Text.Json" Version="6.0.0" />
+		<PackageReference Include="System.Text.Json" Version="8.0.0" />
 	</ItemGroup>
 
   <ItemGroup>

@@ -1,141 +1,164 @@
-﻿using AgentChat.Core.Tests;
+﻿using System.Runtime.InteropServices;
+using AgentChat.Core.Tests;
 using AgentChat.Example.Share;
-using FluentAssertions;
 using AgentChat.OpenAI;
-using Xunit.Abstractions;
-using System.Runtime.InteropServices;
+using Azure.AI.OpenAI;
+using FluentAssertions;
 using Xunit;
+using Xunit.Abstractions;
 
-namespace AgentChat.DotnetInteractiveService.Tests
+namespace AgentChat.DotnetInteractiveService.Tests;
+
+/// <summary>
+/// 
+/// </summary>
+public class DotnetInteractiveFunctionTest : IDisposable
 {
-    public class DotnetInteractiveFunctionTest : IDisposable
+    private readonly DotnetInteractiveFunction _function;
+
+    private readonly InteractiveService _interactiveService;
+
+    private readonly ITestOutputHelper _output;
+
+    private readonly string _workingDir;
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="output"></param>
+    public DotnetInteractiveFunctionTest(ITestOutputHelper output)
     {
-        private ITestOutputHelper _output;
-        private InteractiveService _interactiveService;
-        private string _workingDir;
-        private DotnetInteractiveFunction _function;
+        _output = output;
+        _workingDir = Path.Combine(Path.GetTempPath(), "test");
 
-        public DotnetInteractiveFunctionTest(ITestOutputHelper output)
+        if (!Directory.Exists(_workingDir))
         {
-            _output = output;
-            _workingDir = Path.Combine(Path.GetTempPath(), "test");
-            if (!Directory.Exists(_workingDir))
+            Directory.CreateDirectory(_workingDir);
+        }
+
+        _interactiveService = new InteractiveService(_workingDir);
+        _interactiveService.StartAsync(_workingDir, default).Wait();
+        _function = new DotnetInteractiveFunction(_interactiveService);
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public void Dispose()
+    {
+        _interactiveService.Dispose();
+        _function.Dispose();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    [ApiKeyFact("AZURE_OPENAI_API_KEY")]
+    public async Task DotnetInteractiveFunction_InstallNugetPackage_TestAsync()
+    {
+        var agent = new GPTAgent(
+            Constant.GPT35,
+            "tester",
+            "tester",
+            new Dictionary<FunctionDefinition, Func<string, Task<string>>>
             {
-                Directory.CreateDirectory(_workingDir);
-            }
+                { _function.InstallNugetPackagesFunction, _function.InstallNugetPackagesWrapper }
+            });
 
-            _interactiveService = new InteractiveService(_workingDir);
-            _interactiveService.StartAsync(_workingDir, default).Wait();
-            _function = new DotnetInteractiveFunction(_interactiveService);
-        }
+        var msg = @"Install the following nugets:
+- Microsoft.ML
+- Microsoft.ML.AutoML
+";
+        var result = await agent.SendMessageAsync(msg);
+        result.Should().BeOfType<GPTChatMessage>();
+        (result as GPTChatMessage)?.FunctionCall?.Name.Should().Be(_function.InstallNugetPackagesFunction.Name);
+        result?.Content.Should().Contain("Microsoft.ML");
+        result?.Content.Should().Contain("Microsoft.ML.AutoML");
+    }
 
-        public void Dispose()
-        {
-            _interactiveService.Dispose();
-            _function.Dispose();
-        }
+    /// <summary>
+    /// 
+    /// </summary>
+    [ApiKeyFact("AZURE_OPENAI_API_KEY")]
+    public async Task DotnetInteractiveFunction_RunCSharpCode_TestAsync()
+    {
+        var agent = Constant.GPT35.CreateAgent(
+            "tester",
+            "tester",
+            functionMap: new Dictionary<FunctionDefinition, Func<string, Task<string>>>
+            {
+                { _function.RunCodeFunction, _function.RunCodeWrapper }
+            });
 
-        [ApiKeyFact("AZURE_OPENAI_API_KEY")]
-        public async Task DotnetInteractiveFunction_RunCSharpCode_TestAsync()
-        {
-            var agent = Constant.GPT35.CreateAgent(
-                name: "tester",
-                roleInformation: "tester",
-                functionMap: new Dictionary<Azure.AI.OpenAI.FunctionDefinition, Func<string, Task<string>>>
-                {
-                    { _function.RunCodeFunction, _function.RunCodeWrapper },
-                });
-
-            var msg = @"Run the following C# code:
+        var msg = @"Run the following C# code:
 ```csharp
 Console.WriteLine(""Hello World"");
 ```
 ";
-            var result = await agent.SendMessageAsync(msg);
-            result.Should().BeOfType<GPTChatMessage>();
-            (result as GPTChatMessage)?.FunctionCall?.Name.Should().Be(_function.RunCodeFunction.Name);
-            result?.Content.Should().StartWith("Hello World");
-        }
+        var result = await agent.SendMessageAsync(msg);
+        result.Should().BeOfType<GPTChatMessage>();
+        (result as GPTChatMessage)?.FunctionCall?.Name.Should().Be(_function.RunCodeFunction.Name);
+        result?.Content.Should().StartWith("Hello World");
+    }
 
-        [ApiKeyFact("AZURE_OPENAI_API_KEY")]
-        public async Task DotnetInteractiveFunction_InstallNugetPackage_TestAsync()
-        {
-            var agent = new GPTAgent(
-                Constant.GPT35,
-                "tester",
-                "tester",
-                new Dictionary<Azure.AI.OpenAI.FunctionDefinition, Func<string, Task<string>>>
-                {
-                    { _function.InstallNugetPackagesFunction, _function.InstallNugetPackagesWrapper },
-                });
+    /// <summary>
+    /// 
+    /// </summary>
+    [Fact]
+    public async Task InteractiveService_InitializeTestAsync()
+    {
+        var cts = new CancellationTokenSource();
+        var isRunning = await _interactiveService.StartAsync(_workingDir, cts.Token);
 
-            var msg = @"Install the following nugets:
-- Microsoft.ML
-- Microsoft.ML.AutoML
-";
-            var result = await agent.SendMessageAsync(msg);
-            result.Should().BeOfType<GPTChatMessage>();
-            (result as GPTChatMessage)?.FunctionCall?.Name.Should().Be(_function.InstallNugetPackagesFunction.Name);
-            result?.Content.Should().Contain("Microsoft.ML");
-            result?.Content.Should().Contain("Microsoft.ML.AutoML");
-        }
+        isRunning.Should().BeTrue();
 
-        [Fact]
-        public async Task InteractiveService_InitializeTestAsync()
-        {
-            var cts = new CancellationTokenSource();
-            var isRunning = await _interactiveService.StartAsync(_workingDir, cts.Token);
+        _interactiveService.IsRunning().Should().BeTrue();
 
-            isRunning.Should().BeTrue();
+        var versionFormatString = string.Empty;
 
-            _interactiveService.IsRunning().Should().BeTrue();
-
-            var versionFormatString = string.Empty;
-
-            // test code snippet
-            var hello_world = @"
+        // test code snippet
+        var hello_world = @"
 Console.WriteLine(""hello world"");
 ";
 
-            await this.TestCodeSnippet(_interactiveService, hello_world, "hello world");
-            await this.TestCodeSnippet(
-                _interactiveService,
-                code: @"
+        await TestCodeSnippet(_interactiveService, hello_world, "hello world");
+
+        await TestCodeSnippet(
+            _interactiveService,
+            @"
 Console.WriteLine(""hello world""
 ",
-                expectedOutput: "Error: (2,32): error CS1026: ) expected");
+            "Error: (2,32): error CS1026: ) expected");
 
-            await this.TestCodeSnippet(
-                service: _interactiveService,
-                code: "throw new Exception();",
-                expectedOutput: "Error: System.Exception: Exception of type 'System.Exception' was thrown");
+        await TestCodeSnippet(
+            _interactiveService,
+            "throw new Exception();",
+            "Error: System.Exception: Exception of type 'System.Exception' was thrown");
 
-            // run the following test only on windows
-            // test power shell
-            // echo hello world
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                var ps = @"echo ""hello world""";
-                await this.TestPowershellCodeSnippet(_interactiveService, ps, "hello world");
-            }
-
-        }
-
-        private async Task TestPowershellCodeSnippet(InteractiveService service, string code, string expectedOutput)
+        // run the following test only on windows
+        // test power shell
+        // echo hello world
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            var result = await service.SubmitPowershellCodeAsync(code, CancellationToken.None);
-            result.Should().StartWith(expectedOutput);
+            var ps = @"echo ""hello world""";
+            await TestPowershellCodeSnippet(_interactiveService, ps, "hello world");
         }
+    }
 
-        private async Task TestCodeSnippet(InteractiveService service, string code, string expectedOutput)
-        {
-            var result = await service.SubmitCSharpCodeAsync(code, CancellationToken.None);
-            result.Should().StartWith(expectedOutput);
-        }
+    private void Service_Output(object? sender, string e)
+    {
+        _output.WriteLine(e);
+    }
 
-        private void Service_Output(object? sender, string e)
-        {
-            this._output.WriteLine(e);
-        }
+    private async Task TestCodeSnippet(InteractiveService service, string code, string expectedOutput)
+    {
+        var result = await service.SubmitCSharpCodeAsync(code, CancellationToken.None);
+        result.Should().StartWith(expectedOutput);
+    }
+
+    private async Task TestPowershellCodeSnippet(InteractiveService service, string code, string expectedOutput)
+    {
+        var result = await service.SubmitPowershellCodeAsync(code, CancellationToken.None);
+        result.Should().StartWith(expectedOutput);
     }
 }

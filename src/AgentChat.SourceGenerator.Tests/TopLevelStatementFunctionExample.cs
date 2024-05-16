@@ -1,15 +1,16 @@
 ﻿using AgentChat;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
+/// <summary>
+/// 
+/// </summary>
 public partial class TopLevelStatementFunctionExample
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="b"></param>
+    /// <returns></returns>
     [FunctionAttribution]
-    public Task<string> Add(int a, int b)
-    {
-        return Task.FromResult($"{a + b}");
-    }
+    public Task<string> Add(int a, int b) => Task.FromResult($"{a + b}");
 }
